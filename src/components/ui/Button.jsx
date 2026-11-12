@@ -1,23 +1,48 @@
+// src/components/ui/Button.jsx
 import React from 'react';
+import Spinner from './Spinner';
 
 const variants = {
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-  secondary: 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-  danger: 'bg-red-600 hover:bg-red-700 text-white',
-  ghost: 'bg-transparent hover:bg-gray-100 text-gray-700',
+  primary: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold shadow-sm focus:ring-amber-400',
+  navy: 'bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-sm focus:ring-slate-500',
+  secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 focus:ring-slate-300',
+  outline: 'border border-slate-300 hover:bg-slate-50 text-slate-700 focus:ring-slate-300',
+  danger: 'bg-rose-600 hover:bg-rose-700 text-white font-medium shadow-sm focus:ring-rose-400',
+  ghost: 'bg-transparent hover:bg-slate-100 text-slate-700 focus:ring-slate-200',
 };
 
-function Button({ children, variant = 'primary', className = '', disabled, ...props }) {
+const sizes = {
+  sm: 'text-xs py-1.5 px-3 rounded-md gap-1.5',
+  md: 'text-sm py-2 px-4 rounded-lg gap-2',
+  lg: 'text-base py-2.5 px-5 rounded-lg gap-2.5',
+};
+
+function Button({
+  children,
+  variant = 'primary',
+  size = 'md',
+  className = '',
+  disabled = false,
+  loading = false,
+  icon: Icon = null,
+  type = 'button',
+  ...props
+}) {
   return (
     <button
-      disabled={disabled}
-      className={
-        "font-medium py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 transition disabled:opacity-50 " +
-        (variants[variant] || variants.primary) + " " + className
-      }
+      type={type}
+      disabled={disabled || loading}
+      className={`inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed select-none ${
+        variants[variant] || variants.primary
+      } ${sizes[size] || sizes.md} ${className}`}
       {...props}
     >
-      {children}
+      {loading ? (
+        <Spinner size={size === 'sm' ? 14 : 16} className="text-current" />
+      ) : Icon ? (
+        <Icon size={size === 'sm' ? 14 : 16} />
+      ) : null}
+      <span>{children}</span>
     </button>
   );
 }
