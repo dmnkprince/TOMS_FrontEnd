@@ -1,0 +1,33 @@
+# ==========================================
+# GOOGLE ANTIGRAVITY IDE COMBINED RULES
+# Optimized for: Fast/Planning Modes & Roo Code Style
+# Stack: React.js & Node.js (Express)
+# ==========================================
+
+# --- ANTIGRAVITY WORKSPACE & MODE CONTROLS ---
+- WHEN IN FAST MODE: Execute immediate, localized code changes without generating extensive boilerplate descriptions or empty placeholder files. Focus entirely on direct code insertion and fast terminal verification.
+- WHEN IN PLANNING MODE: Halt execution until an implementation plan artifact with an explicit task list tree is generated. Wait for a user comment/approval before touching files.
+- If a loop error occurs in Fast Mode (e.g., a terminal compile error repeats twice), automatically shift context to draft a mini-plan to self-heal the error.
+- Utilize the integrated Browser-in-the-Loop feature to verify frontend styling layout and routing changes autonomously after major sprints.
+
+# --- CRITICAL TOKEN & PERFORMANCE SAVINGS ---
+- NEVER overwrite or rewrite an entire massive file just to change a few lines of code. Use localized edits or search-and-replace blocks.
+- Break massive single files into modular components or utility functions if they exceed 400 lines of code.
+
+# --- NODE.JS / EXPRESS CODE STYLE ---
+- Use clean, modern ES Modules syntax (import/export) instead of CommonJS (require).
+- Every asynchronous route handler must leverage try/catch blocks and pass errors cleanly using next(error).
+- Group backend components into dedicated `routes/` and `controllers/` directories.
+- Always append explicit HTTP status codes to responses (e.g., res.status(200).json(), res.status(201), res.status(400)).
+
+# --- REACT.JS CODE STYLE ---
+- Build component structures using modern arrow functions (`const Component = () => {}`).
+- Maintain highly modular structures; split any component if it exceeds 150 lines of code.
+- Always define explicit dependency arrays for useEffect hooks. Never leave them empty unless explicitly intending to run once on mount.
+- Use descriptive variable names for hooks (e.g., const [isLoading, setIsLoading] = useState(false)).
+- Use semantic HTML tags styled with Tailwind CSS utility classes.
+
+# --- DEVELOPMENT & TESTING ---
+- When creating backend API endpoints, always provide the exact fetch/axios snippet needed on the frontend to call it.
+- Before installing any new npm packages, check the existing package.json first to ensure we do not create duplicate dependencies.
+- 
