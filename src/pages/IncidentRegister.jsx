@@ -297,7 +297,7 @@ function IncidentRegister() {
             />
           </div>
 
-          {/* Vehicle Color */}
+          {/* Vehicle Cor */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
               <Palette size={14} className="text-emerald-700" />
