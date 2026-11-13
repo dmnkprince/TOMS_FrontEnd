@@ -107,7 +107,7 @@ function Login() {
               type="email"
               id="login-email"
               icon={Mail}
-              placeholder="officer@toms.gov.ng"
+              placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

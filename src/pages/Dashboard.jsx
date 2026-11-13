@@ -78,12 +78,19 @@ function Dashboard() {
 
   const columns = [
     {
-      label: 'Vehicle Plate / Body Number',
+      label: 'Plate Number',
       key: 'vehiclePlate',
-      render: (val) => (
-        <span className="font-mono font-bold text-xs bg-emerald-50 text-emerald-900 border border-emerald-200/80 px-2.5 py-1 rounded-md tracking-wider">
-          {val || '—'}
-        </span>
+      render: (val, row) => (
+        <div className="flex flex-col">
+          <span className="font-mono font-bold text-xs bg-emerald-50 text-emerald-900 border border-emerald-200/80 px-2 py-0.5 rounded tracking-wider inline-block w-fit">
+            {val || '—'}
+          </span>
+          {row.bodyNumber && row.bodyNumber !== '—' && (
+            <span className="text-[10px] font-mono text-slate-500 mt-0.5">
+              Body: {row.bodyNumber}
+            </span>
+          )}
+        </div>
       ),
     },
     {

@@ -8,6 +8,7 @@ const initialSampleIncidents = [
   {
     id: 'inc-seed-001',
     vehiclePlate: 'KJA-482-AA',
+    bodyNumber: 'BD-101',
     vehicleType: 'Car',
     vehicleMake: 'Toyota',
     vehicleModel: 'Camry',
@@ -24,6 +25,7 @@ const initialSampleIncidents = [
   {
     id: 'inc-seed-002',
     vehiclePlate: 'ABJ-118-RBC',
+    bodyNumber: 'TR-408',
     vehicleType: 'Truck',
     vehicleMake: 'Mercedes',
     vehicleModel: 'Actros',
@@ -40,6 +42,7 @@ const initialSampleIncidents = [
   {
     id: 'inc-seed-003',
     vehiclePlate: 'KND-771-AA',
+    bodyNumber: 'BS-022',
     vehicleType: 'Bus',
     vehicleMake: 'Toyota',
     vehicleModel: 'HiAce',
@@ -64,15 +67,16 @@ function getStoredIncidents() {
     }
     const parsed = JSON.parse(raw);
     const seedMap = {
-      'inc-seed-001': { vehicleMake: 'Toyota', vehicleModel: 'Camry', vehicleColor: 'Silver' },
-      'inc-seed-002': { vehicleMake: 'Mercedes', vehicleModel: 'Actros', vehicleColor: 'White' },
-      'inc-seed-003': { vehicleMake: 'Toyota', vehicleModel: 'HiAce', vehicleColor: 'Blue' },
+      'inc-seed-001': { vehicleMake: 'Toyota', vehicleModel: 'Camry', vehicleColor: 'Silver', bodyNumber: 'BD-101' },
+      'inc-seed-002': { vehicleMake: 'Mercedes', vehicleModel: 'Actros', vehicleColor: 'White', bodyNumber: 'TR-408' },
+      'inc-seed-003': { vehicleMake: 'Toyota', vehicleModel: 'HiAce', vehicleColor: 'Blue', bodyNumber: 'BS-022' },
     };
 
     return parsed.map((item) => {
       const seedDefaults = seedMap[item.id] || {};
       return {
         ...item,
+        bodyNumber: item.bodyNumber || item.body_number || seedDefaults.bodyNumber || '—',
         vehicleMake: item.vehicleMake || item.vehicle_make || seedDefaults.vehicleMake || '—',
         vehicleModel: item.vehicleModel || item.vehicle_model || seedDefaults.vehicleModel || '—',
         vehicleColor: item.vehicleColor || item.vehicle_color || seedDefaults.vehicleColor || '—',
@@ -124,7 +128,8 @@ export const getIncidents = async (currentUser = null, params = {}) => {
 
       return {
         id: s.id || s.reference_number,
-        vehiclePlate: s.plate_number || s.vehiclePlate || s.body_number || '—',
+        vehiclePlate: s.plate_number || s.vehiclePlate || '—',
+        bodyNumber: s.body_number || s.bodyNumber || '—',
         vehicleType: s.vehicle_type || s.vehicleType || 'Car',
         vehicleMake: s.vehicle_make || s.vehicleMake || '—',
         vehicleModel: s.vehicle_model || s.vehicleModel || '—',
@@ -220,6 +225,7 @@ export const createIncident = async (formData, currentUser = null) => {
   const newIncident = {
     id: 'inc-' + Date.now(),
     vehiclePlate: (formData.vehiclePlate || formData.plate_number || '').trim().toUpperCase(),
+    bodyNumber: (formData.bodyNumber || formData.body_number || '').trim().toUpperCase() || '—',
     vehicleType: formData.vehicleType || formData.vehicle_type || 'Car',
     vehicleMake: (formData.vehicleMake || formData.vehicle_make || '').trim() || '—',
     vehicleModel: (formData.vehicleModel || formData.vehicle_model || '').trim() || '—',
@@ -249,6 +255,7 @@ export const createIncident = async (formData, currentUser = null) => {
 
     const payload = {
       plate_number: newIncident.vehiclePlate,
+      body_number: newIncident.bodyNumber !== '—' ? newIncident.bodyNumber : null,
       vehicle_type: newIncident.vehicleType,
       vehicle_make: newIncident.vehicleMake !== '—' ? newIncident.vehicleMake : 'Standard',
       vehicle_model: newIncident.vehicleModel !== '—' ? newIncident.vehicleModel : 'Standard',

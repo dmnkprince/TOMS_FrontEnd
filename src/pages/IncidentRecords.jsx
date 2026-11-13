@@ -49,6 +49,7 @@ function IncidentRecords() {
     if (!filtered || filtered.length === 0) return;
     const headers = [
       'Plate Number',
+      'Body Number',
       'Vehicle Type',
       'Make',
       'Model',
@@ -61,6 +62,7 @@ function IncidentRecords() {
     ];
     const rows = filtered.map((r) => [
       `"${r.vehiclePlate || ''}"`,
+      `"${r.bodyNumber || ''}"`,
       `"${r.vehicleType || ''}"`,
       `"${r.vehicleMake || ''}"`,
       `"${r.vehicleModel || ''}"`,
@@ -105,6 +107,7 @@ function IncidentRecords() {
     const matchesSearch =
       !search ||
       row.vehiclePlate?.toLowerCase().includes(term) ||
+      row.bodyNumber?.toLowerCase().includes(term) ||
       row.vehicleType?.toLowerCase().includes(term) ||
       row.vehicleMake?.toLowerCase().includes(term) ||
       row.vehicleModel?.toLowerCase().includes(term) ||
@@ -122,23 +125,34 @@ function IncidentRecords() {
   });
 
   // Table columns displaying the details captured on the register incident page:
-  // 1. Vehicle Plate / Body Number
-  // 2. Vehicle Type
-  // 3. Make
-  // 4. Model
-  // 5. Color
-  // 6. Time (auto-captured from system time)
-  // 7. Date (auto-captured from system date)
-  // 8. Offence Type
-  // 9. Location
-  // 10. Description / Notes
+  // 1. Vehicle Plate Number
+  // 2. Body Number
+  // 3. Vehicle Type
+  // 4. Make
+  // 5. Model
+  // 6. Color
+  // 7. Time (auto-captured from system time)
+  // 8. Date (auto-captured from system date)
+  // 9. Offence Type
+  // 10. Location
+  // 11. Description / Notes
+  // 12. Action (View)
   const columns = [
     {
-      label: 'Vehicle Plate / Body Number',
+      label: 'Plate Number',
       key: 'vehiclePlate',
       render: (val) => (
         <span className="font-mono font-bold text-xs bg-emerald-50 text-emerald-900 border border-emerald-200/80 px-2.5 py-1 rounded-md tracking-wider">
           {val || '—'}
+        </span>
+      ),
+    },
+    {
+      label: 'Body Number',
+      key: 'bodyNumber',
+      render: (val) => (
+        <span className="font-mono font-bold text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+          {val && val !== '—' ? val : '—'}
         </span>
       ),
     },
@@ -394,11 +408,16 @@ function IncidentRecords() {
             <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">
-                  Vehicle Plate / Body Number
+                  Vehicle Plate Number
                 </span>
                 <p className="text-2xl font-black font-mono text-emerald-950 mt-0.5 tracking-wider">
                   {activeRecord.vehiclePlate || '—'}
                 </p>
+                {activeRecord.bodyNumber && activeRecord.bodyNumber !== '—' && (
+                  <span className="inline-block mt-1 text-[11px] font-mono text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded font-bold border border-emerald-300">
+                    Body Number: {activeRecord.bodyNumber}
+                  </span>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-white text-emerald-900 border border-emerald-300 shadow-2xs">
@@ -416,7 +435,17 @@ function IncidentRecords() {
                 <Car size={14} className="text-emerald-700" />
                 Vehicle Specifications
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    Body Number
+                  </span>
+                  <span className="font-mono text-sm font-semibold text-slate-800">
+                    {activeRecord.bodyNumber && activeRecord.bodyNumber !== '—'
+                      ? activeRecord.bodyNumber
+                      : '—'}
+                  </span>
+                </div>
                 <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
                     Vehicle Make

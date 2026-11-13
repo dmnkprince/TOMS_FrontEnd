@@ -109,7 +109,7 @@ function UserProfile() {
 
       setPasswordFeedback({
         type: 'success',
-        text: 'Password change request submitted. In accordance with policy, only an Administrator can approve change of password.',
+        text: 'Password change request submitted. an Administrator will approve change of password.',
       });
       setNewPassword('');
       setConfirmPassword('');
@@ -299,12 +299,9 @@ function UserProfile() {
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs mb-6">
           <div className="flex items-center gap-2 font-bold text-emerald-900">
             <Lock size={16} className="text-emerald-700" />
-            <span>Strict Policy: Only Admin Can Approve Change of Password</span>
+            <span>Only Admin Can Approve Change of Password</span>
           </div>
-          <p className="mt-1.5 text-emerald-800 leading-relaxed">
-            In compliance with security protocols, password changes cannot take effect immediately upon entry. All officer password requests are submitted to the <strong>Administrator Approval Queue</strong>. An Admin must review and grant approval before your new password is enabled.
-          </p>
-          {isAdmin && (
+                  {isAdmin && (
             <div className="mt-3 pt-3 border-t border-emerald-200/80 flex items-center justify-between">
               <span className="font-semibold text-emerald-900">
                 You are logged in as an Administrator.

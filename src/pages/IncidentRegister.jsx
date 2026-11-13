@@ -13,11 +13,13 @@ import {
   Sparkles,
   Palette,
   Wrench,
+  Hash,
 } from 'lucide-react';
 import { createIncident } from '../services/incidentService';
 import { Button } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
+//list of offences
 const OFFENCE_TYPES = [
   'Speeding',
   'Running Red Light',
@@ -29,14 +31,13 @@ const OFFENCE_TYPES = [
   'Expired Driver License',
   'Overloading',
   'Driving Against Traffic',
-  'Others',
-];
+  ];
 
-const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Trailer', 'Truck', 'Bus', 'Tricycle', 'Others'];
+const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Trailer', 'Truck', 'Bus', 'Tricycle'];
 
 const VEHICLE_COLORS = [
   'Black', 'White', 'Silver', 'Grey', 'Red', 'Blue', 'Green',
-  'Yellow', 'Orange', 'Brown', 'Gold', 'Maroon', 'Others',
+  'Yellow', 'Orange', 'Brown', 'Gold', 'Maroon',
 ];
 
 function getSystemDateTime() {
@@ -60,6 +61,7 @@ function IncidentRegister() {
 
   const [form, setForm] = useState({
     vehiclePlate: '',
+    bodyNumber: '',
     vehicleType: '',
     vehicleMake: '',
     vehicleModel: '',
@@ -102,7 +104,7 @@ function IncidentRegister() {
 
     try {
       if (!form.vehiclePlate.trim()) {
-        throw new Error('Vehicle Plate / Body Number is required.');
+        throw new Error('Vehicle Plate Number is required.');
       }
       if (!form.offenceType) {
         throw new Error('Please select an Offence Type.');
@@ -128,6 +130,7 @@ function IncidentRegister() {
       setSubmitted(true);
       setForm({
         vehiclePlate: '',
+        bodyNumber: '',
         vehicleType: '',
         vehicleMake: '',
         vehicleModel: '',
@@ -231,18 +234,33 @@ function IncidentRegister() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Vehicle Plate */}
+          {/* Vehicle Plate Number */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
               <Car size={14} className="text-emerald-700" />
-              Vehicle Plate / Body Number <span className="text-emerald-700">*</span>
+              Vehicle Plate Number <span className="text-emerald-700">*</span>
             </label>
             <input
               name="vehiclePlate"
               value={form.vehiclePlate}
               onChange={handleChange}
-              placeholder="e.g. KJA-482-AA or CAB-92"
+              placeholder="e.g. KJA-482-AA"
               required
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm uppercase font-mono bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+            />
+          </div>
+
+          {/* Body Number */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Hash size={14} className="text-emerald-700" />
+              Body Number
+            </label>
+            <input
+              name="bodyNumber"
+              value={form.bodyNumber}
+              onChange={handleChange}
+              placeholder="e.g. CAB-92 or BD-104"
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm uppercase font-mono bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
           </div>
