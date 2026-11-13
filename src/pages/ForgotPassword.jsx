@@ -42,7 +42,7 @@ function ForgotPassword() {
             <Shield size={20} />
           </div>
           <span className="text-sm font-black tracking-widest text-[#052e16]">
-            TOMS SECURITY PORTAL
+            
           </span>
         </div>
 
@@ -57,7 +57,7 @@ function ForgotPassword() {
               </h2>
               <div className="mt-3 p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-left text-xs text-emerald-900 space-y-2">
                 <p className="font-semibold">
-                  🛡️ Security Policy: Only an Administrator can approve change of password.
+                  Security Policy: Only an Administrator can approve change of password.
                 </p>
                 <p className="text-emerald-800">
                   Your password change request for <strong className="font-mono text-emerald-950">{email}</strong> has been placed in the Admin Approval Queue.
@@ -93,7 +93,7 @@ function ForgotPassword() {
                 <Lock size={14} /> Strict Administrative Control
               </p>
               <p className="mt-1 text-[11px] text-emerald-800 leading-relaxed">
-                In accordance with traffic enforcement standards, officers cannot change passwords unilaterally. All submissions require formal Administrator sign-off.
+                officers cannot change passwords unilaterally. All submissions require formal Administrator sign-off.
               </p>
             </div>
 
