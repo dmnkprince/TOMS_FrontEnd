@@ -1,7 +1,7 @@
 // src/pages/IncidentRecords.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, FileSpreadsheet, RefreshCw, Clock } from 'lucide-react';
+import { Plus, Search, Filter, FileSpreadsheet, RefreshCw, Clock, Download, Printer } from 'lucide-react';
 import { Card, Table, Button, Input, Select, Badge } from '../components/ui';
 import { getIncidents } from '../services/incidentService';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +26,47 @@ function IncidentRecords() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (!filtered || filtered.length === 0) return;
+    const headers = [
+      'Plate Number',
+      'Vehicle Type',
+      'Make',
+      'Model',
+      'Color',
+      'Time',
+      'Date',
+      'Offence Type',
+      'Location',
+      'Description',
+    ];
+    const rows = filtered.map((r) => [
+      `"${r.vehiclePlate || ''}"`,
+      `"${r.vehicleType || ''}"`,
+      `"${r.vehicleMake || ''}"`,
+      `"${r.vehicleModel || ''}"`,
+      `"${r.vehicleColor || ''}"`,
+      `"${r.time || ''}"`,
+      `"${r.date || ''}"`,
+      `"${r.offenceType || ''}"`,
+      `"${r.location || ''}"`,
+      `"${(r.description || '').replace(/"/g, '""')}"`,
+    ]);
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `TOMS_Incident_Report_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   useEffect(() => {
     loadData();
   }, [user?.id, user?.role]);
@@ -40,6 +81,10 @@ function IncidentRecords() {
     const matchesSearch =
       !search ||
       row.vehiclePlate?.toLowerCase().includes(term) ||
+      row.vehicleType?.toLowerCase().includes(term) ||
+      row.vehicleMake?.toLowerCase().includes(term) ||
+      row.vehicleModel?.toLowerCase().includes(term) ||
+      row.vehicleColor?.toLowerCase().includes(term) ||
       row.time?.toLowerCase().includes(term) ||
       row.location?.toLowerCase().includes(term) ||
       row.offenceType?.toLowerCase().includes(term) ||
@@ -53,11 +98,14 @@ function IncidentRecords() {
   // Table columns displaying the details captured on the register incident page:
   // 1. Vehicle Plate / Body Number
   // 2. Vehicle Type
-  // 3. Time (auto-captured from system time)
-  // 4. Date (auto-captured from system date)
-  // 5. Offence Type
-  // 6. Location
-  // 7. Description / Notes
+  // 3. Make
+  // 4. Model
+  // 5. Color
+  // 6. Time (auto-captured from system time)
+  // 7. Date (auto-captured from system date)
+  // 8. Offence Type
+  // 9. Location
+  // 10. Description / Notes
   const columns = [
     {
       label: 'Vehicle Plate / Body Number',
@@ -74,6 +122,56 @@ function IncidentRecords() {
       render: (val) => (
         <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700">
           {val || 'Car'}
+        </span>
+      ),
+    },
+    {
+      label: 'Make',
+      key: 'vehicleMake',
+      render: (val) => (
+        <span className="text-xs font-medium text-slate-800">
+          {val && val !== 'Standard' ? val : '—'}
+        </span>
+      ),
+    },
+    {
+      label: 'Model',
+      key: 'vehicleModel',
+      render: (val) => (
+        <span className="text-xs font-medium text-slate-800">
+          {val && val !== 'Standard' ? val : '—'}
+        </span>
+      ),
+    },
+    {
+      label: 'Color',
+      key: 'vehicleColor',
+      render: (val) => (
+        <span className="inline-flex items-center gap-1.5 text-xs text-slate-700">
+          {val && val !== 'Standard' && val !== '—' && (
+            <span
+              className="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block"
+              style={{
+                backgroundColor:
+                  val.toLowerCase() === 'white'
+                    ? '#ffffff'
+                    : val.toLowerCase() === 'black'
+                    ? '#111827'
+                    : val.toLowerCase() === 'silver' || val.toLowerCase() === 'grey'
+                    ? '#9ca3af'
+                    : val.toLowerCase() === 'red' || val.toLowerCase() === 'maroon'
+                    ? '#dc2626'
+                    : val.toLowerCase() === 'blue'
+                    ? '#2563eb'
+                    : val.toLowerCase() === 'green'
+                    ? '#16a34a'
+                    : val.toLowerCase() === 'yellow' || val.toLowerCase() === 'gold'
+                    ? '#eab308'
+                    : '#cbd5e1',
+              }}
+            />
+          )}
+          {val && val !== 'Standard' ? val : '—'}
         </span>
       ),
     },
@@ -144,7 +242,17 @@ function IncidentRecords() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            variant="secondary"
+            size="md"
+            icon={Download}
+            onClick={handleExportCSV}
+            title="Export incidents report to CSV"
+          >
+            Export Report
+          </Button>
+
           <Button
             variant="secondary"
             size="md"

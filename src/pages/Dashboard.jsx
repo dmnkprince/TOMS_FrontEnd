@@ -94,6 +94,21 @@ function Dashboard() {
       ),
     },
     {
+      label: 'Make & Model',
+      key: 'vehicleMake',
+      render: (_, row) => {
+        const parts = [
+          row.vehicleMake && row.vehicleMake !== 'Standard' && row.vehicleMake !== '—' ? row.vehicleMake : '',
+          row.vehicleModel && row.vehicleModel !== 'Standard' && row.vehicleModel !== '—' ? row.vehicleModel : '',
+        ].filter(Boolean);
+        return (
+          <span className="text-xs text-slate-700">
+            {parts.length > 0 ? parts.join(' ') : '—'}
+          </span>
+        );
+      },
+    },
+    {
       label: 'Time (System)',
       key: 'time',
       render: (val) => (
