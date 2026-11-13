@@ -11,9 +11,12 @@ import {
   Calendar,
   FileText,
   Sparkles,
+  Palette,
+  Wrench,
 } from 'lucide-react';
 import { createIncident } from '../services/incidentService';
 import { Button } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 
 const OFFENCE_TYPES = [
   'Speeding',
@@ -26,9 +29,15 @@ const OFFENCE_TYPES = [
   'Expired Driver License',
   'Overloading',
   'Driving Against Traffic',
+  'Others',
 ];
 
-const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Trailer', 'Truck', 'Bus', 'Tricycle'];
+const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Trailer', 'Truck', 'Bus', 'Tricycle', 'Others'];
+
+const VEHICLE_COLORS = [
+  'Black', 'White', 'Silver', 'Grey', 'Red', 'Blue', 'Green',
+  'Yellow', 'Orange', 'Brown', 'Gold', 'Maroon', 'Others',
+];
 
 function getSystemDateTime() {
   const now = new Date();
@@ -46,12 +55,17 @@ function getSystemDateTime() {
 
 function IncidentRegister() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const initialClock = getSystemDateTime();
 
   const [form, setForm] = useState({
     vehiclePlate: '',
     vehicleType: '',
+    vehicleMake: '',
+    vehicleModel: '',
+    vehicleColor: '',
     offenceType: '',
+    otherOffence: '',
     location: '',
     date: initialClock.date,
     time: initialClock.time,
@@ -96,20 +110,30 @@ function IncidentRegister() {
 
       // Capture exact system time at moment of submission
       const exactSystemClock = getSystemDateTime();
+      const finalOffence =
+        form.offenceType === 'Others' && form.otherOffence?.trim()
+          ? `Others (${form.otherOffence.trim()})`
+          : form.offenceType;
+
       const payload = {
         ...form,
+        offenceType: finalOffence,
         date: exactSystemClock.date,
         time: exactSystemClock.time,
       };
 
-      await createIncident(payload);
+      await createIncident(payload, user);
 
       setLastPlate(form.vehiclePlate.toUpperCase());
       setSubmitted(true);
       setForm({
         vehiclePlate: '',
         vehicleType: '',
+        vehicleMake: '',
+        vehicleModel: '',
+        vehicleColor: '',
         offenceType: '',
+        otherOffence: '',
         location: '',
         date: exactSystemClock.date,
         time: exactSystemClock.time,
@@ -136,7 +160,7 @@ function IncidentRegister() {
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Capture vehicle violation details directly onto the live traffic registry. Date and time are auto-captured from system time.
+            Capture vehicle violation details directly onto the live traffic registry.
           </p>
         </div>
 
@@ -202,7 +226,7 @@ function IncidentRegister() {
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
             <Sparkles size={14} className="text-emerald-700" />
-            <span>Date & Time Auto-Captured from System</span>
+           
           </div>
         </div>
 
@@ -243,6 +267,57 @@ function IncidentRegister() {
             </select>
           </div>
 
+          {/* Vehicle Make */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Wrench size={14} className="text-emerald-700" />
+              Vehicle Make
+            </label>
+            <input
+              name="vehicleMake"
+              value={form.vehicleMake}
+              onChange={handleChange}
+              placeholder="e.g. Toyota, Honda, Dangote"
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+            />
+          </div>
+
+          {/* Vehicle Model */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Car size={14} className="text-emerald-700" />
+              Vehicle Model
+            </label>
+            <input
+              name="vehicleModel"
+              value={form.vehicleModel}
+              onChange={handleChange}
+              placeholder="e.g. Camry, Corolla, Hilux"
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+            />
+          </div>
+
+          {/* Vehicle Color */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+              <Palette size={14} className="text-emerald-700" />
+              Vehicle Color
+            </label>
+            <select
+              name="vehicleColor"
+              value={form.vehicleColor}
+              onChange={handleChange}
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+            >
+              <option value="">Select color...</option>
+              {VEHICLE_COLORS.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Time (Captured automatically from system time) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
@@ -251,7 +326,7 @@ function IncidentRegister() {
                 Time (System Captured)
               </label>
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Auto
+                
               </span>
             </div>
             <div className="relative">
@@ -267,9 +342,7 @@ function IncidentRegister() {
                 Live
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              Captured automatically from computer system clock.
-            </p>
+          
           </div>
 
           {/* Date (Captured automatically from system date) */}
@@ -280,7 +353,7 @@ function IncidentRegister() {
                 Date (System Captured)
               </label>
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Auto
+                
               </span>
             </div>
             <input
@@ -291,10 +364,7 @@ function IncidentRegister() {
               title="Automatically captured from current system date"
               className="w-full border border-emerald-200 rounded-lg px-3.5 py-2.5 text-sm font-mono font-bold bg-emerald-50/50 text-emerald-950 cursor-not-allowed select-none"
             />
-            <p className="text-[11px] text-slate-400 mt-1">
-              Captured automatically from computer system clock.
-            </p>
-          </div>
+                   </div>
 
           {/* Offence Type */}
           <div>
@@ -315,6 +385,18 @@ function IncidentRegister() {
                 </option>
               ))}
             </select>
+
+            {form.offenceType === 'Others' && (
+              <div className="mt-2 animate-in fade-in">
+                <input
+                  name="otherOffence"
+                  value={form.otherOffence}
+                  onChange={handleChange}
+                  placeholder="Specify violation name / code..."
+                  className="w-full border border-emerald-300 rounded-lg px-3 py-2 text-xs bg-emerald-50/40 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600"
+                />
+              </div>
+            )}
           </div>
 
           {/* Location */}

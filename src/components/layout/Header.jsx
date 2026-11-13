@@ -30,11 +30,6 @@ function Header({ onMenuClick = () => {} }) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-            <span>TOMS System Online</span>
-          </div>
-          <span className="text-slate-300 hidden sm:inline">|</span>
           <h2 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">
             Traffic Offence Management System
           </h2>

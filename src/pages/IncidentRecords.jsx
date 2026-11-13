@@ -4,8 +4,10 @@ import { Link } from 'react-router-dom';
 import { Plus, Search, Filter, FileSpreadsheet, RefreshCw, Clock } from 'lucide-react';
 import { Card, Table, Button, Input, Select, Badge } from '../components/ui';
 import { getIncidents } from '../services/incidentService';
+import { useAuth } from '../context/AuthContext';
 
 function IncidentRecords() {
+  const { user } = useAuth();
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -14,7 +16,7 @@ function IncidentRecords() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await getIncidents();
+      const res = await getIncidents(user);
       const list = res.data || [];
       setIncidents(list);
     } catch (err) {
@@ -26,7 +28,7 @@ function IncidentRecords() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [user?.id, user?.role]);
 
   // Distinct offence types for the filter dropdown
   const offenceOptions = Array.from(

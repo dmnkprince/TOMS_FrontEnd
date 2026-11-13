@@ -24,6 +24,5 @@ describe('Dashboard', () => {
     renderDashboard();
     expect(screen.getByText(/total incidents/i)).toBeTruthy();
     expect(screen.getByText(/today's activity/i)).toBeTruthy();
-    expect(screen.getByText(/active patrol zones/i)).toBeTruthy();
   });
 });

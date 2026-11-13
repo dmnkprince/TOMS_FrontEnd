@@ -9,33 +9,48 @@ const initialSampleIncidents = [
     id: 'inc-seed-001',
     vehiclePlate: 'KJA-482-AA',
     vehicleType: 'Car',
+    vehicleMake: 'Toyota',
+    vehicleModel: 'Camry',
+    vehicleColor: 'Silver',
     time: '10:45:12',
     offenceType: 'Speeding',
     location: 'Lekki-Epe Expressway Km 14',
     date: '2026-11-12',
     description: 'Vehicle clocked exceeding 60km/h zone at 94km/h.',
+    agent_id: 'c0000000-0000-0000-0000-000000000003', // Officer David Okafor
+    registered_by: 'officer.david@toms.gov',
     created_at: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
   },
   {
     id: 'inc-seed-002',
     vehiclePlate: 'ABJ-118-RBC',
     vehicleType: 'Truck',
+    vehicleMake: 'Mercedes',
+    vehicleModel: 'Actros',
+    vehicleColor: 'White',
     time: '14:20:00',
     offenceType: 'Running Red Light',
     location: 'Herbert Macaulay Junction, CBD',
     date: '2026-11-11',
     description: 'Vehicle failed to yield and crossed red traffic signal during high traffic.',
+    agent_id: 'c0000000-0000-0000-0000-000000000004', // Officer Aisha Bello
+    registered_by: 'officer.aisha@toms.gov',
     created_at: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
   },
   {
     id: 'inc-seed-003',
     vehiclePlate: 'KND-771-AA',
     vehicleType: 'Bus',
+    vehicleMake: 'Toyota',
+    vehicleModel: 'HiAce',
+    vehicleColor: 'Blue',
     time: '08:35:40',
     offenceType: 'Using Phone While Driving',
     location: 'Kano Ring Road Interchange',
     date: '2026-11-10',
     description: 'Driver observed actively operating handheld cellular device while in motion.',
+    agent_id: 'c0000000-0000-0000-0000-000000000003', // Officer David Okafor
+    registered_by: 'officer.david@toms.gov',
     created_at: new Date(Date.now() - 3600 * 1000 * 72).toISOString(),
   },
 ];
@@ -48,7 +63,6 @@ function getStoredIncidents() {
       return initialSampleIncidents;
     }
     const parsed = JSON.parse(raw);
-    // Ensure any previously stored items have a time field
     return parsed.map((item) => ({
       ...item,
       time: item.time || (item.created_at ? new Date(item.created_at).toLocaleTimeString('en-GB') : '11:00:00'),
@@ -66,11 +80,25 @@ function saveStoredIncidents(list) {
   }
 }
 
-export const getIncidents = async (params = {}) => {
+export const getIncidents = async (currentUser = null, params = {}) => {
   const localList = getStoredIncidents();
 
+  let user = currentUser;
+  if (!user) {
+    try {
+      const stored = localStorage.getItem('toms_user');
+      if (stored) user = JSON.parse(stored);
+    } catch (e) {}
+  }
+
+  const isAgent = user?.role === 'agent' || user?.role === 'officer';
+  const queryParams = { ...params };
+  if (isAgent && user?.id) {
+    queryParams.agent_id = user.id;
+  }
+
   try {
-    const response = await apiClient.get('/incidents', { params });
+    const response = await apiClient.get('/incidents', { params: queryParams });
     const data = response.data?.data || response.data || [];
     const serverIncidents = Array.isArray(data) ? data : data.incidents || [];
 
@@ -86,6 +114,9 @@ export const getIncidents = async (params = {}) => {
         id: s.id || s.reference_number,
         vehiclePlate: s.plate_number || s.vehiclePlate || s.body_number || '—',
         vehicleType: s.vehicle_type || s.vehicleType || 'Car',
+        vehicleMake: s.vehicle_make || s.vehicleMake || '—',
+        vehicleModel: s.vehicle_model || s.vehicleModel || '—',
+        vehicleColor: s.vehicle_color || s.vehicleColor || '—',
         time: s.time || formattedTime,
         offenceType:
           s.offences?.[0]?.title ||
@@ -95,6 +126,8 @@ export const getIncidents = async (params = {}) => {
         location: s.manual_location || s.location || s.location_description || '—',
         date: formattedDate,
         description: s.remarks || s.description || '—',
+        agent_id: s.agent_id,
+        registered_by: s.registered_by || s.agent_name || s.agent_badge,
         created_at: s.created_at || s.incident_date,
       };
     });
@@ -111,15 +144,54 @@ export const getIncidents = async (params = {}) => {
       }
     }
 
+    // Role-based visibility:
+    // Officers/agents can only view incidents they registered.
+    // Admins and supervisors can view incidents recorded by everyone.
+    if (isAgent && user) {
+      const filteredForAgent = merged.filter((item) => {
+        return (
+          (item.agent_id && item.agent_id === user.id) ||
+          (item.registered_by &&
+            (item.registered_by === user.email ||
+              item.registered_by === user.full_name ||
+              item.registered_by === user.badge_number))
+        );
+      });
+      return { data: filteredForAgent };
+    }
+
     return { data: merged };
   } catch (err) {
     console.warn('Backend unavailable, serving locally cached incidents', err);
+
+    // Apply role-based visibility to offline/local storage
+    if (isAgent && user) {
+      const filteredForAgent = localList.filter((item) => {
+        return (
+          (item.agent_id && item.agent_id === user.id) ||
+          (item.registered_by &&
+            (item.registered_by === user.email ||
+              item.registered_by === user.full_name ||
+              item.registered_by === user.badge_number))
+        );
+      });
+      return { data: filteredForAgent };
+    }
+
     return { data: localList };
   }
 };
 
-export const createIncident = async (formData) => {
+export const createIncident = async (formData, currentUser = null) => {
   const localList = getStoredIncidents();
+
+  let user = currentUser;
+  if (!user) {
+    try {
+      const stored = localStorage.getItem('toms_user');
+      if (stored) user = JSON.parse(stored);
+    } catch (e) {}
+  }
 
   // Capture current system date and time automatically
   const now = new Date();
@@ -137,11 +209,16 @@ export const createIncident = async (formData) => {
     id: 'inc-' + Date.now(),
     vehiclePlate: (formData.vehiclePlate || formData.plate_number || '').trim().toUpperCase(),
     vehicleType: formData.vehicleType || formData.vehicle_type || 'Car',
-    time: formData.time || systemTime, // Automatically captured from system time
+    vehicleMake: (formData.vehicleMake || formData.vehicle_make || '').trim() || '—',
+    vehicleModel: (formData.vehicleModel || formData.vehicle_model || '').trim() || '—',
+    vehicleColor: (formData.vehicleColor || formData.vehicle_color || '').trim() || '—',
+    time: formData.time || systemTime,
     offenceType: formData.offenceType || formData.offence || 'General Violation',
     location: (formData.location || formData.manual_location || '').trim() || 'Unspecified Sector',
-    date: formData.date || systemDate, // Automatically captured from system date
+    date: formData.date || systemDate,
     description: (formData.description || formData.remarks || '').trim() || '—',
+    agent_id: user?.id || null,
+    registered_by: user?.email || user?.full_name || 'Enforcement Agent',
     created_at: now.toISOString(),
   };
 
@@ -161,9 +238,9 @@ export const createIncident = async (formData) => {
     const payload = {
       plate_number: newIncident.vehiclePlate,
       vehicle_type: newIncident.vehicleType,
-      vehicle_make: 'Standard',
-      vehicle_model: newIncident.vehicleType,
-      vehicle_color: 'Standard',
+      vehicle_make: newIncident.vehicleMake !== '—' ? newIncident.vehicleMake : 'Standard',
+      vehicle_model: newIncident.vehicleModel !== '—' ? newIncident.vehicleModel : 'Standard',
+      vehicle_color: newIncident.vehicleColor !== '—' ? newIncident.vehicleColor : 'Standard',
       manual_location: newIncident.location,
       time: newIncident.time,
       date: newIncident.date,

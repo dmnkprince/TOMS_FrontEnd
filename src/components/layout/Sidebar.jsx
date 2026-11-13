@@ -63,12 +63,8 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
             <Shield size={22} className="stroke-[2.5]" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
+            <div>
               <span className="text-base font-black tracking-widest text-white">
-                TOMS
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                v1.0
               </span>
             </div>
             <p className="text-[10px] text-emerald-200/70 font-medium tracking-tight">

@@ -4,11 +4,8 @@ import { Link } from 'react-router-dom';
 import {
   FilePlus2,
   FileSpreadsheet,
-  AlertTriangle,
   Clock,
-  ShieldCheck,
   ArrowUpRight,
-  MapPin,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Card, Badge, Button, Table } from '../components/ui';
@@ -60,7 +57,7 @@ function Dashboard() {
     async function fetchDashboardData() {
       setLoading(true);
       try {
-        const res = await getIncidents();
+        const res = await getIncidents(user);
         const list = res.data || [];
         if (isMounted) {
           setRecentIncidents(list.slice(0, 5));
@@ -77,7 +74,7 @@ function Dashboard() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [user?.id, user?.role]);
 
   const columns = [
     {
@@ -162,8 +159,8 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* 4 Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <StatCard
           title="Total Incidents"
           value={totalCount.toLocaleString()}
@@ -177,20 +174,6 @@ function Dashboard() {
           subtitle="Violations recorded today"
           icon={Clock}
           color="sky"
-        />
-        <StatCard
-          title="Active Patrol Zones"
-          value="6 Zones"
-          subtitle="Monitored road sectors"
-          icon={MapPin}
-          color="emerald"
-        />
-        <StatCard
-          title="System Status"
-          value="Operational"
-          subtitle="Registry verified"
-          icon={ShieldCheck}
-          color="darkGreen"
         />
       </div>
 

@@ -57,11 +57,11 @@ function Login() {
             Traffic Offence Management System
           </h2>
           <p className="text-sm sm:text-base text-emerald-100/80 max-w-md leading-relaxed">
-            Secure, centralized enterprise platform for recording vehicle violations, tracking registered incidents, and managing traffic enforcement operations.
+            Secure, centralized platform for recording vehicle violations and tracking registered incidents. {/* and managing traffic enforcement operations.*/}
           </p>
         </div>
 
-        {/* Feature Highlights */}
+        {/* Feature Highlights 
         <div className="relative z-10 py-10 space-y-4 hidden sm:block">
           <div className="flex items-center gap-3 text-xs text-emerald-100/90">
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -75,12 +75,12 @@ function Login() {
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span>Strict administrator authorization for password modifications</span>
           </div>
-        </div>
+        </div> 
+		*/}
 
         {/* Footer */}
         <div className="relative z-10 pt-4 border-t border-emerald-900 text-xs text-emerald-300/70 flex items-center justify-between">
-          <span>&copy; {new Date().getFullYear()} Traffic Safety Authority</span>
-          <span className="font-mono text-emerald-300">TOMS v1.0</span>
+          <span>&copy; {new Date().getFullYear()} Aures</span>
         </div>
       </div>
 
