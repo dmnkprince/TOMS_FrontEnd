@@ -1,9 +1,11 @@
+// src/components/layout/Header.jsx
 import React from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { Menu, LogOut, Shield, Bell, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ROLE_LABELS } from '../../constants/roles';
 
-function Header() {
+function Header({ onMenuClick = () => {} }) {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
@@ -12,15 +14,59 @@ function Header() {
     navigate('/login');
   };
 
+  const roleLabel = (user?.role && ROLE_LABELS[user.role]) || user?.role || 'Enforcement Agent';
+
   return (
-    <header className="flex items-center justify-between bg-blue-700 text-white px-5 py-3 shadow-md">
-      <h1 className="text-lg font-semibold tracking-wide">Traffic Offence Management System</h1>
-      <div className="flex items-center gap-4">
-        {user && <span className="text-sm opacity-80">{user.name}</span>}
-        <button onClick={handleLogout}
-          className="flex items-center gap-1.5 bg-blue-800 hover:bg-blue-900 text-sm font-medium py-1.5 px-3 rounded transition">
-          <LogOut size={15} /> Logout
+    <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 sm:px-6 bg-white border-b border-slate-200/90 shadow-2xs">
+      {/* Left: Mobile hamburger & title */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+          aria-label="Open sidebar menu"
+        >
+          <Menu size={20} />
         </button>
+
+        <div className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>TOMS System Online</span>
+          </div>
+          <span className="text-slate-300 hidden sm:inline">|</span>
+          <h2 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight">
+            Traffic Offence Management System
+          </h2>
+        </div>
+      </div>
+
+      {/* Right: Notification, Officer info & Logout */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Officer Badge Details */}
+        <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
+          <div className="hidden sm:block text-right">
+            <p className="text-xs font-bold text-slate-900 leading-tight">
+              {user?.full_name || 'Enforcement Officer'}
+            </p>
+            <p className="text-[10px] text-amber-600 font-semibold tracking-wide">
+              {roleLabel} {user?.badge_number ? `· #${user.badge_number}` : ''}
+            </p>
+          </div>
+
+          <div className="w-9 h-9 rounded-full bg-slate-900 text-amber-400 font-bold text-xs flex items-center justify-center border-2 border-amber-500/30 shadow-xs">
+            {user?.full_name?.charAt(0)?.toUpperCase() || 'O'}
+          </div>
+
+          <button
+            onClick={handleLogout}
+            title="Sign out of TOMS"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 transition-all duration-150 shadow-2xs"
+          >
+            <LogOut size={14} />
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
+        </div>
       </div>
     </header>
   );

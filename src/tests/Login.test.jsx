@@ -17,18 +17,21 @@ function renderLogin() {
 }
 
 describe('Login', () => {
-  it('renders username and password fields', () => {
+  it('renders email and password fields', () => {
     renderLogin();
-    expect(screen.getByLabelText(/username/i)).toBeTruthy();
-    expect(screen.getByLabelText(/password/i)).toBeTruthy();
+    expect(screen.getByLabelText(/email address/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^password/i)).toBeTruthy();
   });
 
-  it('calls login on form submit', async () => {
+  it('calls login with email on form submit', async () => {
     renderLogin();
-    fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'admin' } });
-    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'secret' } });
-    // Button text is "Sign In"
+    fireEvent.change(screen.getByLabelText(/email address/i), {
+      target: { value: 'officer@toms.gov.ng' },
+    });
+    fireEvent.change(screen.getByLabelText(/^password/i), {
+      target: { value: 'securepassword123' },
+    });
     fireEvent.click(screen.getByRole('button', { name: /sign in/i }));
-    expect(mockLogin).toHaveBeenCalledWith('admin', 'secret');
+    expect(mockLogin).toHaveBeenCalledWith('officer@toms.gov.ng', 'securepassword123');
   });
 });

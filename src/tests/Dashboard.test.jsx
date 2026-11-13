@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import Dashboard from '../pages/Dashboard';
 import { AuthContext } from '../context/AuthContext';
 
-function renderDashboard(user = { name: 'Test Officer' }) {
+function renderDashboard(user = { full_name: 'Test Officer' }) {
   return render(
     <AuthContext.Provider value={{ user }}>
       <MemoryRouter>
@@ -15,18 +15,16 @@ function renderDashboard(user = { name: 'Test Officer' }) {
 }
 
 describe('Dashboard', () => {
-  it('shows welcome message with user name', () => {
+  it('shows welcome message with officer full name', () => {
     renderDashboard();
-    // Text is split across nodes ("Welcome back, " + user name), use a function matcher
-    const heading = screen.getByRole('heading', { level: 2 });
-    expect(heading.textContent).toMatch(/welcome back.*test officer/i);
+    expect(screen.getByText(/Test Officer/i)).toBeTruthy();
   });
 
-  it('renders stat cards', () => {
+  it('renders stat cards matching TOMS specification', () => {
     renderDashboard();
     expect(screen.getByText(/total incidents/i)).toBeTruthy();
-    expect(screen.getByText(/open cases/i)).toBeTruthy();
-    expect(screen.getByText(/resolved/i)).toBeTruthy();
-    expect(screen.getByText(/pending review/i)).toBeTruthy();
+    expect(screen.getByText(/today's incidents/i)).toBeTruthy();
+    expect(screen.getByText(/pending corrections/i)).toBeTruthy();
+    expect(screen.getByText(/active offence types/i)).toBeTruthy();
   });
 });

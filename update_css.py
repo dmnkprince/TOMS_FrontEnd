@@ -1,0 +1,30 @@
+css = '''@import " tailwindcss\;
+
+@theme {
+ --color-primary: #1d4ed8;
+ --color-secondary: #6b7280;
+ --color-success: #10b981;
+ --color-warning: #f59e0b;
+ --color-error: #ef4444;
+}
+
+html,
+body,
+#root {
+ min-height: 100%;
+ width: 100%;
+ margin: 0;
+ padding: 0;
+}
+
+body {
+ font-family: -apple-system, BlinkMacSystemFont, \Segoe UI\, Roboto, \Helvetica Neue\, Arial, sans-serif;
+ background-color: #f8fafc;
+ color: #0f172a;
+ -webkit-font-smoothing: antialiased;
+ -moz-osx-font-smoothing: grayscale;
+}
+'''
+with open('src/index.css', 'w', encoding='utf-8') as f:
+ f.write(css)
+print('Done!')

@@ -1,16 +1,24 @@
+// src/components/ui/Badge.jsx
 import React from 'react';
 
-const colors = {
-  success: 'bg-green-100 text-green-700',
-  warning: 'bg-yellow-100 text-yellow-700',
-  error:   'bg-red-100   text-red-700',
-  info:    'bg-blue-100  text-blue-700',
-  default: 'bg-gray-100  text-gray-700',
+const variants = {
+  success: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+  warning: 'bg-amber-50 text-amber-800 border-amber-200/80',
+  danger: 'bg-rose-50 text-rose-700 border-rose-200/80',
+  error: 'bg-rose-50 text-rose-700 border-rose-200/80',
+  info: 'bg-sky-50 text-sky-700 border-sky-200/80',
+  navy: 'bg-slate-900 text-amber-400 border-slate-700',
+  neutral: 'bg-slate-100 text-slate-700 border-slate-200',
+  default: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
-function Badge({ children, variant = 'default' }) {
+function Badge({ children, variant = 'default', className = '' }) {
+  const style = variants[variant] || variants.default;
+
   return (
-    <span className={"inline-block px-2 py-0.5 rounded-full text-xs font-medium " + (colors[variant] || colors.default)}>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style} ${className}`}
+    >
       {children}
     </span>
   );
