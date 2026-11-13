@@ -47,12 +47,10 @@ function Login() {
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#064e3b]/80 border border-emerald-700/60 text-emerald-300 text-xs font-semibold mb-8">
             <Shield size={16} className="text-emerald-400" />
-            <span>Enforcement Portal · Restricted Access</span>
+          
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-2">
-            TOMS
-          </h1>
+       
           <h2 className="text-xl sm:text-2xl font-bold text-emerald-200 tracking-tight mb-4">
             Traffic Offence Management System
           </h2>
@@ -164,8 +162,7 @@ function Login() {
 
           <div className="pt-6 border-t border-slate-100 text-center">
             <p className="text-xs text-slate-400">
-              Authorized personnel only. All access attempts are recorded for system security.
-            </p>
+              Authorized personnel only. </p>
           </div>
         </div>
       </div>

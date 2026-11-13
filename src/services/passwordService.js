@@ -73,7 +73,18 @@ export async function requestPasswordChange({ email, officerName, badgeNumber, n
 
   // Attempt backend API call if endpoint is available
   try {
-    await apiClient.post('/auth/password-change-request', newRequest);
+    const res = await apiClient.post('/auth/password-change-request', newRequest);
+    if (res.data?.data) {
+      const serverReq = res.data.data;
+      const updated = requests.filter((r) => r.id !== newRequest.id);
+      updated.unshift(serverReq);
+      saveStoredRequests(updated);
+      return {
+        success: true,
+        message: 'Password change request submitted for Administrator approval.',
+        request: serverReq,
+      };
+    }
   } catch (err) {
     // Graceful fallback to client persistence
   }
@@ -89,7 +100,8 @@ export async function getPasswordRequests() {
   // Attempt backend API call first
   try {
     const res = await apiClient.get('/auth/password-requests');
-    if (res.data?.data) {
+    if (res.data?.data && Array.isArray(res.data.data)) {
+      saveStoredRequests(res.data.data);
       return res.data.data;
     }
   } catch (err) {
@@ -104,32 +116,51 @@ export async function approvePasswordRequest(requestId, adminUser) {
     throw new Error('Access Denied: Only an Administrator can approve change of password.');
   }
 
-  const requests = getStoredRequests();
-  const index = requests.findIndex((r) => r.id === requestId);
-  if (index === -1) {
-    throw new Error('Password change request not found.');
-  }
+  let backendResult = null;
+  let backendErr = null;
 
-  requests[index].status = 'approved';
-  requests[index].approved_by = adminUser.full_name || 'System Administrator';
-  requests[index].approved_at = new Date().toISOString();
-
-  saveStoredRequests(requests);
-
-  // Attempt backend update
+  // 1. Dispatch approval to Backend API first
   try {
-    await apiClient.post(`/auth/password-requests/${requestId}/approve`, {
+    const res = await apiClient.post(`/auth/password-requests/${requestId}/approve`, {
       approved_by: adminUser.id,
     });
+    backendResult = res.data?.data || res.data;
   } catch (err) {
-    // Fallback
+    backendErr = err;
+    console.warn('Backend approval call error, checking local store:', err.message);
   }
 
-  return {
-    success: true,
-    message: `Password change request for ${requests[index].email} approved by Administrator.`,
-    request: requests[index],
-  };
+  // 2. Synchronize with localStorage
+  const requests = getStoredRequests();
+  const index = requests.findIndex((r) => r.id === requestId);
+
+  if (index !== -1) {
+    requests[index].status = 'approved';
+    requests[index].approved_by = adminUser.full_name || 'System Administrator';
+    requests[index].approved_at = new Date().toISOString();
+    saveStoredRequests(requests);
+
+    return {
+      success: true,
+      message: `Password change request for ${requests[index].email} approved by Administrator.`,
+      request: requests[index],
+    };
+  }
+
+  // If found and approved on backend but not in localStorage
+  if (backendResult) {
+    return {
+      success: true,
+      message: `Password change request approved by Administrator.`,
+      request: backendResult,
+    };
+  }
+
+  throw new Error(
+    backendErr?.response?.data?.message ||
+      backendErr?.message ||
+      'Password change request not found.'
+  );
 }
 
 export async function rejectPasswordRequest(requestId, adminUser, reason = '') {
@@ -138,32 +169,50 @@ export async function rejectPasswordRequest(requestId, adminUser, reason = '') {
     throw new Error('Access Denied: Only an Administrator can reject password changes.');
   }
 
-  const requests = getStoredRequests();
-  const index = requests.findIndex((r) => r.id === requestId);
-  if (index === -1) {
-    throw new Error('Password change request not found.');
-  }
+  let backendResult = null;
+  let backendErr = null;
 
-  requests[index].status = 'rejected';
-  requests[index].rejection_reason = reason || 'Declined by Administrator';
-  requests[index].reviewed_by = adminUser.full_name || 'System Administrator';
-  requests[index].reviewed_at = new Date().toISOString();
-
-  saveStoredRequests(requests);
-
-  // Attempt backend update
+  // 1. Dispatch rejection to Backend API first
   try {
-    await apiClient.post(`/auth/password-requests/${requestId}/reject`, {
+    const res = await apiClient.post(`/auth/password-requests/${requestId}/reject`, {
       reviewed_by: adminUser.id,
       reason,
     });
+    backendResult = res.data?.data || res.data;
   } catch (err) {
-    // Fallback
+    backendErr = err;
+    console.warn('Backend reject call error, checking local store:', err.message);
   }
 
-  return {
-    success: true,
-    message: `Password change request for ${requests[index].email} has been rejected.`,
-    request: requests[index],
-  };
+  // 2. Synchronize with localStorage
+  const requests = getStoredRequests();
+  const index = requests.findIndex((r) => r.id === requestId);
+
+  if (index !== -1) {
+    requests[index].status = 'rejected';
+    requests[index].rejection_reason = reason || 'Declined by Administrator';
+    requests[index].reviewed_by = adminUser.full_name || 'System Administrator';
+    requests[index].reviewed_at = new Date().toISOString();
+    saveStoredRequests(requests);
+
+    return {
+      success: true,
+      message: `Password change request for ${requests[index].email} has been rejected.`,
+      request: requests[index],
+    };
+  }
+
+  if (backendResult) {
+    return {
+      success: true,
+      message: `Password change request has been rejected.`,
+      request: backendResult,
+    };
+  }
+
+  throw new Error(
+    backendErr?.response?.data?.message ||
+      backendErr?.message ||
+      'Password change request not found.'
+  );
 }
