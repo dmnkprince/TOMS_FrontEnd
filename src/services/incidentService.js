@@ -63,10 +63,22 @@ function getStoredIncidents() {
       return initialSampleIncidents;
     }
     const parsed = JSON.parse(raw);
-    return parsed.map((item) => ({
-      ...item,
-      time: item.time || (item.created_at ? new Date(item.created_at).toLocaleTimeString('en-GB') : '11:00:00'),
-    }));
+    const seedMap = {
+      'inc-seed-001': { vehicleMake: 'Toyota', vehicleModel: 'Camry', vehicleColor: 'Silver' },
+      'inc-seed-002': { vehicleMake: 'Mercedes', vehicleModel: 'Actros', vehicleColor: 'White' },
+      'inc-seed-003': { vehicleMake: 'Toyota', vehicleModel: 'HiAce', vehicleColor: 'Blue' },
+    };
+
+    return parsed.map((item) => {
+      const seedDefaults = seedMap[item.id] || {};
+      return {
+        ...item,
+        vehicleMake: item.vehicleMake || item.vehicle_make || seedDefaults.vehicleMake || '—',
+        vehicleModel: item.vehicleModel || item.vehicle_model || seedDefaults.vehicleModel || '—',
+        vehicleColor: item.vehicleColor || item.vehicle_color || seedDefaults.vehicleColor || '—',
+        time: item.time || (item.created_at ? new Date(item.created_at).toLocaleTimeString('en-GB') : '11:00:00'),
+      };
+    });
   } catch (e) {
     return initialSampleIncidents;
   }
