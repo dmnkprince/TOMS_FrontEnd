@@ -5,14 +5,10 @@ import {
   LayoutDashboard,
   FilePlus2,
   FileSpreadsheet,
-  Search,
-  Filter,
-  FileCheck2,
-  BarChart3,
   Users2,
-  ShieldAlert,
   UserCheck,
   Shield,
+  KeyRound,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -43,40 +39,10 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
       roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
     },
     {
-      to: '/vehicles/search',
-      label: 'Vehicle Search',
-      icon: Search,
-      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
-    },
-    {
-      to: '/incidents/search',
-      label: 'Advanced Search',
-      icon: Filter,
-      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
-    },
-    {
-      to: '/corrections',
-      label: 'Corrections',
-      icon: FileCheck2,
-      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
-    },
-    {
-      to: '/reports',
-      label: 'Reports & Analytics',
-      icon: BarChart3,
-      roles: [ROLES.SUPERVISOR, ROLES.ADMIN],
-    },
-    {
       to: '/admin/users',
-      label: 'User Management',
+      label: 'Password Approvals & Users',
       icon: Users2,
       roles: [ROLES.ADMIN],
-    },
-    {
-      to: '/audit-logs',
-      label: 'Audit Logs',
-      icon: ShieldAlert,
-      roles: [ROLES.SUPERVISOR, ROLES.ADMIN],
     },
     {
       to: '/profile',
@@ -89,23 +55,23 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
   const visibleLinks = links.filter((link) => link.roles.includes(role));
 
   const content = (
-    <div className="flex flex-col h-full bg-slate-950 text-slate-100 border-r border-slate-900 select-none">
+    <div className="flex flex-col h-full bg-[#052e16] text-white border-r border-[#064e3b] select-none">
       {/* Brand Header */}
-      <div className="flex items-center justify-between px-5 py-5 border-b border-slate-900/80">
+      <div className="flex items-center justify-between px-5 py-5 border-b border-[#064e3b]">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-500 shadow-sm">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 text-emerald-400 shadow-sm">
             <Shield size={22} className="stroke-[2.5]" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-xl font-black tracking-widest text-amber-500">
+              <span className="text-base font-black tracking-widest text-white">
                 TOMS
               </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
                 v1.0
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 font-medium tracking-tight">
+            <p className="text-[10px] text-emerald-200/70 font-medium tracking-tight">
               Traffic Offence Management
             </p>
           </div>
@@ -114,15 +80,15 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
         {/* Close button for mobile drawer */}
         <button
           onClick={() => setMobileOpen(false)}
-          className="md:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-900 transition-colors"
+          className="md:hidden p-1.5 text-emerald-200/70 hover:text-white rounded-lg hover:bg-emerald-900/60 transition-colors"
         >
           <X size={20} />
         </button>
       </div>
 
       {/* Nav List */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1.5">
+        <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-300/60">
           Navigation
         </div>
         {visibleLinks.map(({ to, label, icon: Icon }) => (
@@ -133,21 +99,21 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all duration-150 ${
                 isActive
-                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
-                  : 'text-slate-300 hover:bg-slate-900/90 hover:text-white'
+                  ? 'bg-emerald-700 text-white shadow-md shadow-emerald-950/40 font-bold border border-emerald-600/50'
+                  : 'text-emerald-100/80 hover:bg-[#064e3b] hover:text-white'
               }`
             }
           >
-            <Icon size={18} className="shrink-0" />
+            <Icon size={18} className="shrink-0 text-emerald-300" />
             <span className="truncate">{label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* User Footer Card */}
-      <div className="p-3 border-t border-slate-900/80 bg-slate-950/80">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
+      <div className="p-3 border-t border-[#064e3b] bg-[#042411]">
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#064e3b]/70 border border-emerald-800/80">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0">
             {user?.full_name?.charAt(0)?.toUpperCase() || 'O'}
           </div>
           <div className="min-w-0 flex-1">
@@ -155,10 +121,10 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
               {user?.full_name || 'Officer On Duty'}
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] font-mono text-slate-300">
+              <span className="text-[10px] font-mono text-emerald-200/80">
                 {user?.badge_number ? `#${user.badge_number}` : 'ACTIVE'}
               </span>
-              <span className="text-[9px] uppercase px-1.5 py-0.2 rounded font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="text-[9px] uppercase px-1.5 py-0.2 rounded font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700/60">
                 {user?.role || 'Agent'}
               </span>
             </div>
@@ -178,7 +144,7 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
       {/* Mobile Drawer Backdrop */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-40 bg-[#052e16]/80 backdrop-blur-xs md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}

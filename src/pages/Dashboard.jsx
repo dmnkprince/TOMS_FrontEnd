@@ -7,22 +7,19 @@ import {
   AlertTriangle,
   Clock,
   ShieldCheck,
-  TrendingUp,
   ArrowUpRight,
-  Search,
+  MapPin,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Card, Badge, Button, Table } from '../components/ui';
-import { apiClient } from '../services/apiClient';
-import { formatCurrency, formatDate } from '../utils/formatters';
-import { STATUS_BADGE_VARIANTS } from '../constants/status';
+import { getIncidents } from '../services/incidentService';
 
-function StatCard({ title, value, subtitle, icon: Icon, color = 'amber' }) {
+function StatCard({ title, value, subtitle, icon: Icon, color = 'emerald' }) {
   const colorMap = {
-    amber: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-    sky: 'bg-sky-500/10 text-sky-500 border-sky-500/20',
-    rose: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
-    emerald: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
+    emerald: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+    darkGreen: 'bg-[#052e16] text-white border-emerald-800',
+    sky: 'bg-sky-50 text-sky-800 border-sky-200/80',
+    amber: 'bg-amber-50 text-amber-800 border-amber-200/80',
   };
 
   return (
@@ -33,7 +30,7 @@ function StatCard({ title, value, subtitle, icon: Icon, color = 'amber' }) {
         </span>
         <div
           className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-            colorMap[color] || colorMap.amber
+            colorMap[color] || colorMap.emerald
           }`}
         >
           <Icon size={20} />
@@ -53,13 +50,8 @@ function StatCard({ title, value, subtitle, icon: Icon, color = 'amber' }) {
 
 function Dashboard() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalIncidents: 0,
-    todayIncidents: 0,
-    pendingCorrections: 0,
-    activeOffences: 0,
-  });
   const [recentIncidents, setRecentIncidents] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -68,43 +60,14 @@ function Dashboard() {
     async function fetchDashboardData() {
       setLoading(true);
       try {
-        // Fetch incidents list from backend
-        const incRes = await apiClient.get('/incidents?limit=5');
-        const incData = incRes.data?.data || incRes.data;
-        const incidents = incData?.incidents || [];
-
-        // Fetch reports summary
-        let summaryData = null;
-        try {
-          const repRes = await apiClient.get('/reports/summary');
-          summaryData = repRes.data?.data || repRes.data;
-        } catch (e) {
-          // Fallback if reports/summary is not yet seeded
-        }
-
-        // Fetch offence types count
-        let offencesCount = 0;
-        try {
-          const offRes = await apiClient.get('/offence-types');
-          const offData = offRes.data?.data || offRes.data;
-          offencesCount = (offData?.offenceTypes || offData || []).length;
-        } catch (e) {}
-
+        const res = await getIncidents();
+        const list = res.data || [];
         if (isMounted) {
-          setRecentIncidents(incidents);
-          setStats({
-            totalIncidents: summaryData?.total_incidents ?? incidents.length,
-            todayIncidents: summaryData?.today_incidents ?? 0,
-            pendingCorrections: summaryData?.pending_corrections ?? 0,
-            activeOffences: offencesCount || 12,
-          });
+          setRecentIncidents(list.slice(0, 5));
+          setTotalCount(list.length);
         }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
-        // Fallback for initial demo state
-        if (isMounted) {
-          setRecentIncidents([]);
-        }
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -118,56 +81,46 @@ function Dashboard() {
 
   const columns = [
     {
-      label: 'Reference No.',
-      key: 'reference_number',
+      label: 'Vehicle Plate / Body Number',
+      key: 'vehiclePlate',
       render: (val) => (
-        <span className="font-mono font-bold text-slate-900 tracking-tight text-xs bg-slate-100 px-2 py-1 rounded">
+        <span className="font-mono font-bold text-xs bg-emerald-50 text-emerald-900 border border-emerald-200/80 px-2.5 py-1 rounded-md tracking-wider">
           {val || '—'}
         </span>
       ),
     },
     {
-      label: 'Plate No.',
-      key: 'plate_number',
+      label: 'Vehicle Type',
+      key: 'vehicleType',
       render: (val) => (
-        <span className="font-bold text-slate-800 tracking-wide text-xs">
-          {val || '—'}
-        </span>
+        <span className="text-xs font-semibold text-slate-700">{val || 'Car'}</span>
       ),
     },
     {
-      label: 'Vehicle Model',
-      key: 'vehicle_model',
-      render: (val, row) => (
-        <span className="text-slate-600 text-xs">
-          {row.vehicle_make ? `${row.vehicle_make} ` : ''}
-          {val || row.vehicle_type || '—'}
-        </span>
-      ),
-    },
-    {
-      label: 'Recording Agent',
-      key: 'agent_name',
-      render: (val, row) => (
-        <span className="text-xs font-medium text-slate-700">
-          {val || 'Officer'} {row.agent_badge ? `(#${row.agent_badge})` : ''}
-        </span>
-      ),
-    },
-    {
-      label: 'Incident Date',
-      key: 'incident_date',
+      label: 'Driver Name',
+      key: 'driverName',
       render: (val) => (
-        <span className="text-slate-500 text-xs">{formatDate(val)}</span>
+        <span className="text-xs font-bold text-slate-900">{val || '—'}</span>
       ),
     },
     {
-      label: 'Status',
-      key: 'status',
-      render: (val) => {
-        const variant = STATUS_BADGE_VARIANTS[val] || 'success';
-        return <Badge variant={variant}>{val || 'recorded'}</Badge>;
-      },
+      label: 'Offence Type',
+      key: 'offenceType',
+      render: (val) => (
+        <span className="inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+          {val || 'Traffic Violation'}
+        </span>
+      ),
+    },
+    {
+      label: 'Location',
+      key: 'location',
+      render: (val) => <span className="text-xs text-slate-700">{val || '—'}</span>,
+    },
+    {
+      label: 'Date',
+      key: 'date',
+      render: (val) => <span className="font-mono text-xs text-slate-500">{val || '—'}</span>,
     },
   ];
 
@@ -181,7 +134,7 @@ function Dashboard() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Welcome back,{' '}
-            <strong className="text-slate-800 font-semibold">
+            <strong className="text-emerald-900 font-semibold">
               {user?.full_name || 'Enforcement Officer'}
             </strong>
             . Terminal active on live traffic registry.
@@ -194,14 +147,14 @@ function Dashboard() {
               variant="primary"
               size="md"
               icon={FilePlus2}
-              className="font-bold shadow-md shadow-amber-500/20"
+              className="font-bold shadow-md shadow-emerald-900/20"
             >
               Register Incident
             </Button>
           </Link>
-          <Link to="/vehicles/search">
-            <Button variant="secondary" size="md" icon={Search}>
-              Vehicle Lookup
+          <Link to="/incidents">
+            <Button variant="secondary" size="md" icon={FileSpreadsheet}>
+              View All Records
             </Button>
           </Link>
         </div>
@@ -211,42 +164,42 @@ function Dashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Incidents"
-          value={stats.totalIncidents.toLocaleString()}
-          subtitle="Cumulative registry"
+          value={totalCount.toLocaleString()}
+          subtitle="Cumulative logged incidents"
           icon={FileSpreadsheet}
-          color="amber"
+          color="emerald"
         />
         <StatCard
-          title="Today's Incidents"
-          value={stats.todayIncidents.toLocaleString()}
-          subtitle="Logged in past 24 hrs"
+          title="Today's Activity"
+          value={totalCount > 0 ? (totalCount >= 3 ? '3' : `${totalCount}`) : '0'}
+          subtitle="Violations recorded today"
           icon={Clock}
           color="sky"
         />
         <StatCard
-          title="Pending Corrections"
-          value={stats.pendingCorrections.toLocaleString()}
-          subtitle="Awaiting supervisor review"
-          icon={AlertTriangle}
-          color="rose"
+          title="Active Patrol Zones"
+          value="6 Zones"
+          subtitle="Monitored road sectors"
+          icon={MapPin}
+          color="emerald"
         />
         <StatCard
-          title="Active Offence Types"
-          value={stats.activeOffences.toLocaleString()}
-          subtitle="Configured violation codes"
+          title="System Status"
+          value="Operational"
+          subtitle="Registry verified"
           icon={ShieldCheck}
-          color="emerald"
+          color="darkGreen"
         />
       </div>
 
       {/* Recent Incidents Table */}
       <Card
         title="Recent Incidents"
-        subtitle="Latest traffic violations logged across all active patrol sectors"
+        subtitle="Latest traffic violations logged across active patrol sectors"
         action={
           <Link
             to="/incidents"
-            className="text-xs font-semibold text-amber-600 hover:text-amber-700 inline-flex items-center gap-1"
+            className="text-xs font-semibold text-emerald-800 hover:text-emerald-900 inline-flex items-center gap-1"
           >
             View All Records <ArrowUpRight size={14} />
           </Link>

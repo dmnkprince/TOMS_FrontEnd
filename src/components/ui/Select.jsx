@@ -21,13 +21,13 @@ function Select({
           htmlFor={selectId}
           className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5"
         >
-          {label} {required && <span className="text-amber-600">*</span>}
+          {label} {required && <span className="text-emerald-700">*</span>}
         </label>
       )}
       <select
         id={selectId}
         required={required}
-        className={`w-full rounded-lg border bg-white text-slate-900 text-sm py-2 px-3 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 ${
+        className={`w-full rounded-lg border bg-white text-slate-900 text-sm py-2 px-3 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 ${
           error
             ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-200'
             : 'border-slate-300 hover:border-slate-400'

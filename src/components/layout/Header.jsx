@@ -1,7 +1,7 @@
 // src/components/layout/Header.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, LogOut, Shield, Bell, CheckCircle2 } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLE_LABELS } from '../../constants/roles';
 
@@ -30,8 +30,8 @@ function Header({ onMenuClick = () => {} }) {
         </button>
 
         <div className="flex items-center gap-2">
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
             <span>TOMS System Online</span>
           </div>
           <span className="text-slate-300 hidden sm:inline">|</span>
@@ -41,7 +41,7 @@ function Header({ onMenuClick = () => {} }) {
         </div>
       </div>
 
-      {/* Right: Notification, Officer info & Logout */}
+      {/* Right: Officer info & Logout */}
       <div className="flex items-center gap-3 sm:gap-4">
         {/* Officer Badge Details */}
         <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
@@ -49,12 +49,12 @@ function Header({ onMenuClick = () => {} }) {
             <p className="text-xs font-bold text-slate-900 leading-tight">
               {user?.full_name || 'Enforcement Officer'}
             </p>
-            <p className="text-[10px] text-amber-600 font-semibold tracking-wide">
+            <p className="text-[10px] text-emerald-700 font-semibold tracking-wide">
               {roleLabel} {user?.badge_number ? `· #${user.badge_number}` : ''}
             </p>
           </div>
 
-          <div className="w-9 h-9 rounded-full bg-slate-900 text-amber-400 font-bold text-xs flex items-center justify-center border-2 border-amber-500/30 shadow-xs">
+          <div className="w-9 h-9 rounded-full bg-[#052e16] text-emerald-300 font-bold text-xs flex items-center justify-center border-2 border-emerald-600/40 shadow-xs">
             {user?.full_name?.charAt(0)?.toUpperCase() || 'O'}
           </div>
 

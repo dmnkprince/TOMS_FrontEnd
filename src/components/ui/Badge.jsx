@@ -6,8 +6,9 @@ const variants = {
   warning: 'bg-amber-50 text-amber-800 border-amber-200/80',
   danger: 'bg-rose-50 text-rose-700 border-rose-200/80',
   error: 'bg-rose-50 text-rose-700 border-rose-200/80',
-  info: 'bg-sky-50 text-sky-700 border-sky-200/80',
-  navy: 'bg-slate-900 text-amber-400 border-slate-700',
+  info: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+  navy: 'bg-[#052e16] text-emerald-300 border-emerald-800',
+  darkGreen: 'bg-[#052e16] text-white border-emerald-800',
   neutral: 'bg-slate-100 text-slate-700 border-slate-200',
   default: 'bg-slate-100 text-slate-700 border-slate-200',
 };

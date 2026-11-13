@@ -3,12 +3,13 @@ import React from 'react';
 import Spinner from './Spinner';
 
 const variants = {
-  primary: 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold shadow-sm focus:ring-amber-400',
-  navy: 'bg-slate-900 hover:bg-slate-800 text-white font-medium shadow-sm focus:ring-slate-500',
+  primary: 'bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-sm focus:ring-emerald-500',
+  navy: 'bg-[#052e16] hover:bg-[#064e3b] text-white font-medium shadow-sm focus:ring-emerald-500',
+  darkGreen: 'bg-[#052e16] hover:bg-[#064e3b] text-white font-medium shadow-sm focus:ring-emerald-500',
   secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 focus:ring-slate-300',
-  outline: 'border border-slate-300 hover:bg-slate-50 text-slate-700 focus:ring-slate-300',
+  outline: 'border border-emerald-600 hover:bg-emerald-50 text-emerald-800 focus:ring-emerald-300 font-semibold',
   danger: 'bg-rose-600 hover:bg-rose-700 text-white font-medium shadow-sm focus:ring-rose-400',
-  ghost: 'bg-transparent hover:bg-slate-100 text-slate-700 focus:ring-slate-200',
+  ghost: 'bg-transparent hover:bg-emerald-50 text-emerald-800 focus:ring-emerald-200',
 };
 
 const sizes = {

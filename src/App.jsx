@@ -10,18 +10,18 @@ import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
 import IncidentRegister from './pages/IncidentRegister';
-import VehicleSearch from './pages/VehicleSearch';
-import OffenceList from './pages/OffenceList';
+import IncidentRecords from './pages/IncidentRecords';
+import AdminUserManagement from './pages/AdminUserManagement';
 import UserProfile from './pages/UserProfile';
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-[#052e16]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
-          <span className="text-xs uppercase tracking-widest text-slate-400 font-bold">
+          <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-400 rounded-full animate-spin" />
+          <span className="text-xs uppercase tracking-widest text-emerald-200 font-bold">
             Authenticating Terminal...
           </span>
         </div>
@@ -63,27 +63,17 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <OffenceList />
+              <IncidentRecords />
             </DashboardLayout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/vehicles/search"
+        path="/admin/users"
         element={
           <ProtectedRoute>
             <DashboardLayout>
-              <VehicleSearch />
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/offences"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <OffenceList />
+              <AdminUserManagement />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -99,6 +89,7 @@ function AppRoutes() {
         }
       />
 
+      {/* Wildcard redirect to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
