@@ -92,7 +92,7 @@ function Login() {
               Sign In
             </h2>
             <p className="text-sm text-slate-500 mt-1">
-              Welcome back, Officer. Enter your credentials to access your terminal.
+              Welcome back, Enter your credentials to access your terminal.
             </p>
           </div>
 

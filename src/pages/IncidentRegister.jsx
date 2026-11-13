@@ -1,6 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FilePlus2, CheckCircle2, ArrowRight, ShieldAlert, Car, User, MapPin, Calendar, FileText } from 'lucide-react';
+import {
+  FilePlus2,
+  CheckCircle2,
+  ArrowRight,
+  ShieldAlert,
+  Car,
+  Clock,
+  MapPin,
+  Calendar,
+  FileText,
+  Sparkles,
+} from 'lucide-react';
 import { createIncident } from '../services/incidentService';
 import { Button } from '../components/ui';
 
@@ -19,15 +30,31 @@ const OFFENCE_TYPES = [
 
 const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Trailer', 'Truck', 'Bus', 'Tricycle'];
 
+function getSystemDateTime() {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  return {
+    date: `${yyyy}-${mm}-${dd}`,
+    time: `${hh}:${min}:${ss}`,
+  };
+}
+
 function IncidentRegister() {
   const navigate = useNavigate();
+  const initialClock = getSystemDateTime();
+
   const [form, setForm] = useState({
     vehiclePlate: '',
     vehicleType: '',
-    driverName: '',
     offenceType: '',
     location: '',
-    date: new Date().toISOString().slice(0, 10),
+    date: initialClock.date,
+    time: initialClock.time,
     description: '',
   });
 
@@ -35,6 +62,20 @@ function IncidentRegister() {
   const [submitted, setSubmitted] = useState(false);
   const [lastPlate, setLastPlate] = useState('');
   const [error, setError] = useState(null);
+
+  // Keep system date and time continuously synchronized with the live system clock
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const current = getSystemDateTime();
+      setForm((prev) => ({
+        ...prev,
+        date: current.date,
+        time: current.time,
+      }));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -52,21 +93,26 @@ function IncidentRegister() {
       if (!form.offenceType) {
         throw new Error('Please select an Offence Type.');
       }
-      if (!form.date) {
-        throw new Error('Incident Date is required.');
-      }
 
-      await createIncident(form);
+      // Capture exact system time at moment of submission
+      const exactSystemClock = getSystemDateTime();
+      const payload = {
+        ...form,
+        date: exactSystemClock.date,
+        time: exactSystemClock.time,
+      };
+
+      await createIncident(payload);
 
       setLastPlate(form.vehiclePlate.toUpperCase());
       setSubmitted(true);
       setForm({
         vehiclePlate: '',
         vehicleType: '',
-        driverName: '',
         offenceType: '',
         location: '',
-        date: new Date().toISOString().slice(0, 10),
+        date: exactSystemClock.date,
+        time: exactSystemClock.time,
         description: '',
       });
     } catch (err) {
@@ -90,7 +136,7 @@ function IncidentRegister() {
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Capture vehicle violation details directly onto the live traffic registry.
+            Capture vehicle violation details directly onto the live traffic registry. Date and time are auto-captured from system time.
           </p>
         </div>
 
@@ -111,7 +157,7 @@ function IncidentRegister() {
                 Incident Registered Successfully!
               </p>
               <p className="text-xs text-emerald-700 mt-0.5">
-                Violation record for plate <strong className="font-mono">{lastPlate}</strong> has been saved and is immediately available in Incident Records.
+                Violation record for plate <strong className="font-mono">{lastPlate}</strong> has been logged and is immediately visible in Incident Records.
               </p>
             </div>
           </div>
@@ -145,13 +191,19 @@ function IncidentRegister() {
 
       {/* Incident Input Form */}
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 sm:p-8 space-y-6">
-        <div className="border-b border-slate-100 pb-4">
-          <h2 className="text-base font-bold text-slate-900">
-            Violation & Vehicle Specifics
-          </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            All fields captured below will appear on the Incident Records terminal.
-          </p>
+        <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Violation & Vehicle Specifics
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Fill in the vehicle and offence details below.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+            <Sparkles size={14} className="text-emerald-700" />
+            <span>Date & Time Auto-Captured from System</span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -191,19 +243,57 @@ function IncidentRegister() {
             </select>
           </div>
 
-          {/* Driver Name */}
+          {/* Time (Captured automatically from system time) */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <User size={14} className="text-emerald-700" />
-              Driver Name
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Clock size={14} className="text-emerald-700" />
+                Time (System Captured)
+              </label>
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Auto
+              </span>
+            </div>
+            <div className="relative">
+              <input
+                name="time"
+                value={form.time}
+                readOnly
+                title="Automatically captured from current system time"
+                className="w-full border border-emerald-200 rounded-lg px-3.5 py-2.5 text-sm font-mono font-bold bg-emerald-50/50 text-emerald-950 cursor-not-allowed select-none"
+              />
+              <span className="absolute right-3 top-3 text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                Live
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Captured automatically from computer system clock.
+            </p>
+          </div>
+
+          {/* Date (Captured automatically from system date) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                <Calendar size={14} className="text-emerald-700" />
+                Date (System Captured)
+              </label>
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                Auto
+              </span>
+            </div>
             <input
-              name="driverName"
-              value={form.driverName}
-              onChange={handleChange}
-              placeholder="e.g. John Doe"
-              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+              type="date"
+              name="date"
+              value={form.date}
+              readOnly
+              title="Automatically captured from current system date"
+              className="w-full border border-emerald-200 rounded-lg px-3.5 py-2.5 text-sm font-mono font-bold bg-emerald-50/50 text-emerald-950 cursor-not-allowed select-none"
             />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Captured automatically from computer system clock.
+            </p>
           </div>
 
           {/* Offence Type */}
@@ -238,22 +328,6 @@ function IncidentRegister() {
               value={form.location}
               onChange={handleChange}
               placeholder="e.g. Lekki Toll Plaza or Outer Ring Road"
-              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
-            />
-          </div>
-
-          {/* Date */}
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
-              <Calendar size={14} className="text-emerald-700" />
-              Incident Date <span className="text-emerald-700">*</span>
-            </label>
-            <input
-              type="date"
-              name="date"
-              value={form.date}
-              onChange={handleChange}
-              required
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
           </div>

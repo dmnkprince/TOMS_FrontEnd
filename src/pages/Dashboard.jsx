@@ -97,11 +97,18 @@ function Dashboard() {
       ),
     },
     {
-      label: 'Driver Name',
-      key: 'driverName',
+      label: 'Time (System)',
+      key: 'time',
       render: (val) => (
-        <span className="text-xs font-bold text-slate-900">{val || '—'}</span>
+        <span className="font-mono font-bold text-xs text-emerald-800 bg-emerald-50/60 px-2 py-0.5 rounded border border-emerald-200/50">
+          {val || '—'}
+        </span>
       ),
+    },
+    {
+      label: 'Date (System)',
+      key: 'date',
+      render: (val) => <span className="font-mono text-xs text-slate-600">{val || '—'}</span>,
     },
     {
       label: 'Offence Type',
@@ -116,11 +123,6 @@ function Dashboard() {
       label: 'Location',
       key: 'location',
       render: (val) => <span className="text-xs text-slate-700">{val || '—'}</span>,
-    },
-    {
-      label: 'Date',
-      key: 'date',
-      render: (val) => <span className="font-mono text-xs text-slate-500">{val || '—'}</span>,
     },
   ];
 
@@ -137,7 +139,7 @@ function Dashboard() {
             <strong className="text-emerald-900 font-semibold">
               {user?.full_name || 'Enforcement Officer'}
             </strong>
-            . Terminal active on live traffic registry.
+            
           </p>
         </div>
 

@@ -1,7 +1,7 @@
 // src/pages/IncidentRecords.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, FileSpreadsheet, RefreshCw, Car } from 'lucide-react';
+import { Plus, Search, Filter, FileSpreadsheet, RefreshCw, Clock } from 'lucide-react';
 import { Card, Table, Button, Input, Select, Badge } from '../components/ui';
 import { getIncidents } from '../services/incidentService';
 
@@ -38,22 +38,23 @@ function IncidentRecords() {
     const matchesSearch =
       !search ||
       row.vehiclePlate?.toLowerCase().includes(term) ||
-      row.driverName?.toLowerCase().includes(term) ||
+      row.time?.toLowerCase().includes(term) ||
       row.location?.toLowerCase().includes(term) ||
       row.offenceType?.toLowerCase().includes(term) ||
+      row.date?.toLowerCase().includes(term) ||
       row.description?.toLowerCase().includes(term);
 
     const matchesOffence = !selectedOffence || row.offenceType === selectedOffence;
     return matchesSearch && matchesOffence;
   });
 
-  // Table columns displaying ONLY the details captured on the register incident page:
+  // Table columns displaying the details captured on the register incident page:
   // 1. Vehicle Plate / Body Number
   // 2. Vehicle Type
-  // 3. Driver Name
-  // 4. Offence Type
-  // 5. Location
-  // 6. Date
+  // 3. Time (auto-captured from system time)
+  // 4. Date (auto-captured from system date)
+  // 5. Offence Type
+  // 6. Location
   // 7. Description / Notes
   const columns = [
     {
@@ -75,10 +76,19 @@ function IncidentRecords() {
       ),
     },
     {
-      label: 'Driver Name',
-      key: 'driverName',
+      label: 'Time (System)',
+      key: 'time',
       render: (val) => (
-        <span className="text-xs font-bold text-slate-900">
+        <span className="font-mono font-bold text-xs text-emerald-800 bg-emerald-50/60 px-2 py-0.5 rounded border border-emerald-200/50">
+          {val || '—'}
+        </span>
+      ),
+    },
+    {
+      label: 'Date (System)',
+      key: 'date',
+      render: (val) => (
+        <span className="font-mono text-xs text-slate-600">
           {val || '—'}
         </span>
       ),
@@ -97,15 +107,6 @@ function IncidentRecords() {
       key: 'location',
       render: (val) => (
         <span className="text-xs text-slate-700">
-          {val || '—'}
-        </span>
-      ),
-    },
-    {
-      label: 'Date',
-      key: 'date',
-      render: (val) => (
-        <span className="font-mono text-xs text-slate-600">
           {val || '—'}
         </span>
       ),
@@ -135,7 +136,7 @@ function IncidentRecords() {
                 Incident Records
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Displays verified traffic incident details captured by patrol officers.
+                Displays verified traffic incident details. Date and time are automatically recorded from the system clock.
               </p>
             </div>
           </div>
@@ -172,7 +173,7 @@ function IncidentRecords() {
           <div className="w-full sm:w-80">
             <Input
               icon={Search}
-              placeholder="Search plate, driver, location, offence..."
+              placeholder="Search plate, time, date, location, offence..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />

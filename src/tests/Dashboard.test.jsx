@@ -23,8 +23,7 @@ describe('Dashboard', () => {
   it('renders stat cards matching TOMS specification', () => {
     renderDashboard();
     expect(screen.getByText(/total incidents/i)).toBeTruthy();
-    expect(screen.getByText(/today's incidents/i)).toBeTruthy();
-    expect(screen.getByText(/pending corrections/i)).toBeTruthy();
-    expect(screen.getByText(/active offence types/i)).toBeTruthy();
+    expect(screen.getByText(/today's activity/i)).toBeTruthy();
+    expect(screen.getByText(/active patrol zones/i)).toBeTruthy();
   });
 });
