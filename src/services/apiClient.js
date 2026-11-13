@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
-  timeout: 15000,
+  timeout: 60000, // 60s timeout to allow for Render cold starts
 });
 
 // Request interceptor to attach token
