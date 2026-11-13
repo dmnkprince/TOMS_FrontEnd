@@ -1,8 +1,13 @@
 // src/services/apiClient.js
 import axios from 'axios';
 
+// Ensure baseURL always ends with /api/v1 regardless of how VITE_API_BASE_URL was configured
+const rawBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1').trim();
+const cleanBase = rawBase.replace(/\/+$/, '');
+const baseURL = cleanBase.endsWith('/api/v1') ? cleanBase : `${cleanBase}/api/v1`;
+
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1',
+  baseURL,
   timeout: 60000, // 60s timeout to allow for Render cold starts
 });
 
