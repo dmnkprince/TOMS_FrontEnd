@@ -39,19 +39,23 @@ function AdminUserManagement() {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [userActionLoading, setUserActionLoading] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editStaff, setEditStaff] = useState({ id: '', full_name: '', phone_number: '' });
+  const [editStaff, setEditStaff] = useState({ id: '', full_name: '', phone_number: '', role: 'field_agent' });
 
   const openEditModal = (userId) => {
-    const user = users.find((u) => u.id === userId);
-    if (user) {
-      setEditStaff({ id: user.id, full_name: user.full_name, phone_number: user.phone_number || '' });
+    const targetUser = users.find((u) => u.id === userId);
+    if (targetUser) {
+      setEditStaff({
+        id: targetUser.id,
+        full_name: targetUser.full_name || '',
+        phone_number: targetUser.phone_number || '',
+        role: targetUser.role || 'field_agent',
+      });
       setShowEditModal(true);
     }
   };
   const closeEditModal = () => setShowEditModal(false);
 
   const [showAddModal, setShowAddModal] = useState(false);
-
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
@@ -62,12 +66,40 @@ function AdminUserManagement() {
     e.preventDefault();
     setUserActionLoading(`edit-${editStaff.id}`);
     try {
-      await updateUser(editStaff.id, { full_name: editStaff.full_name, phone_number: editStaff.phone_number });
+      const payload = {
+        full_name: editStaff.full_name,
+        phone_number: editStaff.phone_number,
+      };
+      if (isAdmin && editStaff.role) {
+        payload.role = editStaff.role;
+      }
+      await updateUser(editStaff.id, payload);
       setFeedback({ type: 'success', text: 'Staff updated successfully.' });
       await loadUsers();
       closeEditModal();
     } catch (err) {
-      setFeedback({ type: 'error', text: err.message || 'Failed to edit staff.' });
+      setFeedback({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to edit staff.' });
+    } finally {
+      setUserActionLoading(null);
+    }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    if (!isAdmin) {
+      setFeedback({ type: 'error', text: 'Only an Administrator can change roles.' });
+      return;
+    }
+    if (userId === user?.id && newRole !== 'admin') {
+      setFeedback({ type: 'error', text: 'You cannot demote your own Administrator account.' });
+      return;
+    }
+    setUserActionLoading(`role-${userId}`);
+    try {
+      await updateUser(userId, { role: newRole });
+      setFeedback({ type: 'success', text: `Role updated successfully to ${newRole}.` });
+      await loadUsers();
+    } catch (err) {
+      setFeedback({ type: 'error', text: err.response?.data?.message || err.message || 'Failed to update role.' });
     } finally {
       setUserActionLoading(null);
     }
@@ -362,7 +394,42 @@ function AdminUserManagement() {
               { label: 'Full Name', key: 'full_name' },
               { label: 'Badge', key: 'badge_number' },
               { label: 'Email', key: 'email' },
-              { label: 'Role', key: 'role' },
+              {
+                label: 'Role',
+                key: 'role',
+                render: (val, row) => {
+                  const roleName = val || 'field_agent';
+                  if (!isAdmin || row?.id === user?.id) {
+                    return (
+                      <Badge
+                        variant={roleName === 'admin' ? 'navy' : roleName === 'supervisor' ? 'warning' : 'info'}
+                        className="font-bold text-xs"
+                      >
+                        {roleName === 'admin'
+                          ? 'System Admin'
+                          : roleName === 'supervisor'
+                          ? 'Supervisor'
+                          : roleName === 'field_agent'
+                          ? 'Field Agent'
+                          : 'Traffic Agent'}
+                      </Badge>
+                    );
+                  }
+                  return (
+                    <select
+                      value={roleName}
+                      disabled={userActionLoading === `role-${row.id}`}
+                      onChange={(e) => handleRoleChange(row.id, e.target.value)}
+                      className="border border-slate-300 rounded-lg px-2.5 py-1 text-xs bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 shadow-2xs transition"
+                    >
+                      <option value="admin">Admin</option>
+                      <option value="supervisor">Supervisor</option>
+                      <option value="agent">Agent</option>
+                      <option value="field_agent">Field Agent</option>
+                    </select>
+                  );
+                },
+              },
               {
                 label: 'Actions',
                 key: 'id',
@@ -421,6 +488,28 @@ function AdminUserManagement() {
             <form onSubmit={submitEditStaff} className="space-y-3">
               <Input name="full_name" placeholder="Full Name" required value={editStaff.full_name} onChange={handleEditChange} />
               <Input name="phone_number" placeholder="Phone (optional)" value={editStaff.phone_number} onChange={handleEditChange} />
+              {isAdmin && (
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                    User Role
+                  </label>
+                  <select
+                    name="role"
+                    value={editStaff.role}
+                    onChange={handleEditChange}
+                    disabled={editStaff.id === user?.id}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600"
+                  >
+                    <option value="admin">System Administrator (Admin)</option>
+                    <option value="supervisor">Enforcement Supervisor</option>
+                    <option value="agent">Traffic Agent</option>
+                    <option value="field_agent">Field Agent</option>
+                  </select>
+                  {editStaff.id === user?.id && (
+                    <p className="text-[11px] text-amber-600 mt-1 font-medium">You cannot change your own Administrator role.</p>
+                  )}
+                </div>
+              )}
               <div className="flex justify-end space-x-2 mt-4">
                 <Button type="button" variant="secondary" onClick={closeEditModal}>Cancel</Button>
                 <Button type="submit" variant="primary" loading={userActionLoading === `edit-${editStaff.id}`} >Save</Button>
