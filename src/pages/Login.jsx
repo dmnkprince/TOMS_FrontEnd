@@ -83,8 +83,8 @@ function Login() {
       </div>
 
       {/* Right Form Panel - Crisp White */}
-      <div className="w-full md:w-7/12 lg:w-1/2 flex items-center justify-center p-6 sm:p-12 lg:p-16">
-        <div className="w-full max-w-md space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-200/40">
+      <div className="w-full md:w-7/12 lg:w-1/2 flex items-center justify-center p-4 sm:p-12 lg:p-16">
+        <div className="w-full max-w-md space-y-7 bg-white p-6 sm:p-10 rounded-2xl border border-slate-200/80 shadow-xl shadow-slate-200/40">
           <div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Sign In

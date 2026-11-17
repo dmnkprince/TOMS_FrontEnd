@@ -250,7 +250,7 @@ function IncidentRegister() {
       )}
 
       {/* Incident Input Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-6 sm:p-8 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs p-4 sm:p-8 space-y-5 sm:space-y-6">
         <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-base font-bold text-slate-900">
@@ -260,9 +260,9 @@ function IncidentRegister() {
               Fill in the vehicle and offence details below.
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold w-fit">
             <Sparkles size={14} className="text-emerald-700" />
-           
+            <span>Patrol Field Terminal</span>
           </div>
         </div>
 
@@ -508,18 +508,18 @@ function IncidentRegister() {
           />
         </div>
 
-        <div className="pt-2 flex items-center gap-3">
+        <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Button
             type="submit"
             variant="primary"
             size="lg"
             loading={loading}
-            className="px-8 font-bold shadow-md shadow-emerald-900/20"
+            className="w-full sm:w-auto px-8 font-bold text-base shadow-md shadow-emerald-900/20 py-3"
           >
             Submit Incident
           </Button>
-          <Link to="/incidents">
-            <Button type="button" variant="secondary" size="lg">
+          <Link to="/incidents" className="w-full sm:w-auto">
+            <Button type="button" variant="secondary" size="lg" className="w-full sm:w-auto py-3">
               Cancel
             </Button>
           </Link>

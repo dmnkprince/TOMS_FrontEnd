@@ -338,46 +338,121 @@ function IncidentRecords() {
 
       {/* Filter and Table Card */}
       <Card>
-        <div className="flex flex-col md:flex-row items-center gap-3 mb-5">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mb-5">
           <div className="w-full md:w-72">
             <Input
               icon={Search}
-              placeholder="Search plate, make, model, color, time..."
+              placeholder="Search plate, MOT, make, color..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="w-full md:w-52">
-            <Select
-              placeholder="All Offence Types"
-              value={selectedOffence}
-              onChange={(e) => setSelectedOffence(e.target.value)}
-              options={offenceOptions.map((o) => ({ value: o, label: o }))}
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex items-center gap-3 w-full md:w-auto">
+            <div className="w-full md:w-52">
+              <Select
+                placeholder="All Offence Types"
+                value={selectedOffence}
+                onChange={(e) => setSelectedOffence(e.target.value)}
+                options={offenceOptions.map((o) => ({ value: o, label: o }))}
+              />
+            </div>
+
+            <div className="w-full md:w-44">
+              <Select
+                placeholder="All Vehicle Types"
+                value={selectedVehicleType}
+                onChange={(e) => setSelectedVehicleType(e.target.value)}
+                options={vehicleTypeOptions.map((v) => ({ value: v, label: v }))}
+              />
+            </div>
           </div>
 
-          <div className="w-full md:w-44">
-            <Select
-              placeholder="All Vehicle Types"
-              value={selectedVehicleType}
-              onChange={(e) => setSelectedVehicleType(e.target.value)}
-              options={vehicleTypeOptions.map((v) => ({ value: v, label: v }))}
-            />
-          </div>
-
-          <div className="text-xs font-semibold text-slate-500 md:ml-auto">
-            Showing <strong className="text-emerald-800 font-bold">{filtered.length}</strong> recorded incident{filtered.length === 1 ? '' : 's'}
+          <div className="text-xs font-semibold text-slate-500 md:ml-auto flex items-center justify-between md:justify-end">
+            <span>Showing <strong className="text-emerald-800 font-bold">{filtered.length}</strong> recorded incident{filtered.length === 1 ? '' : 's'}</span>
           </div>
         </div>
 
-        <Table
-          columns={columns}
-          data={filtered}
-          loading={loading}
-          onRowClick={(row) => setActiveRecord(row)}
-          emptyMessage="No incidents match the search criteria. Click 'Register Incident' to log a new traffic violation."
-        />
+        {/* Mobile Incident Cards Feed */}
+        <div className="block md:hidden space-y-3">
+          {loading ? (
+            <div className="py-12 text-center text-slate-500">
+              <div className="flex flex-col items-center justify-center gap-2">
+                <div className="w-7 h-7 border-2 border-emerald-600/30 border-t-emerald-700 rounded-full animate-spin" />
+                <span className="text-xs font-semibold text-slate-500">Loading incidents...</span>
+              </div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="py-10 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200 p-6">
+              <FileSpreadsheet size={32} className="mx-auto text-slate-300 mb-2" />
+              <p className="text-sm font-semibold text-slate-700">No records found</p>
+              <p className="text-xs text-slate-400 mt-1">Try adjusting your search terms or filters.</p>
+            </div>
+          ) : (
+            filtered.map((item, idx) => (
+              <div
+                key={item.id || idx}
+                onClick={() => setActiveRecord(item)}
+                className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs active:scale-[0.99] transition cursor-pointer hover:border-emerald-300"
+              >
+                {/* Top Row: Plate + Offence Type */}
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="inline-block font-mono font-black text-sm text-emerald-950 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-300 tracking-wider shadow-2xs">
+                      {item.vehiclePlate || '—'}
+                    </span>
+                    {item.bodyNumber && item.bodyNumber !== '—' && (
+                      <span className="inline-block ml-2 text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 font-semibold">
+                        MOT: {item.bodyNumber}
+                      </span>
+                    )}
+                  </div>
+                  <span className="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300 shrink-0 max-w-[150px] truncate">
+                    {item.offenceType || 'Traffic Violation'}
+                  </span>
+                </div>
+
+                {/* Vehicle & Sector Info */}
+                <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
+                  <div className="flex items-center gap-1.5 text-slate-600">
+                    <Car size={14} className="text-emerald-700 shrink-0" />
+                    <span className="font-medium truncate">
+                      {[item.vehicleType, item.vehicleMake, item.vehicleModel].filter(Boolean).join(' ') || 'Standard Vehicle'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-slate-600 justify-end">
+                    <Clock size={14} className="text-emerald-700 shrink-0" />
+                    <span className="font-mono font-semibold text-[11px] text-slate-800">
+                      {item.time || '—'} · {item.date || '—'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Location + Tap to View */}
+                <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 text-[11px]">
+                  <div className="flex items-center gap-1 text-slate-500 truncate max-w-[70%]">
+                    <MapPin size={13} className="text-emerald-700 shrink-0" />
+                    <span className="truncate">{item.location || 'Location Not Specified'}</span>
+                  </div>
+                  <span className="text-emerald-800 font-bold flex items-center gap-0.5 shrink-0">
+                    Details <Eye size={12} />
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden md:block">
+          <Table
+            columns={columns}
+            data={filtered}
+            loading={loading}
+            onRowClick={(row) => setActiveRecord(row)}
+            emptyMessage="No incidents match the search criteria. Click 'Register Incident' to log a new traffic violation."
+          />
+        </div>
       </Card>
 
       {/* Detailed Incident Record Inspection Modal */}
