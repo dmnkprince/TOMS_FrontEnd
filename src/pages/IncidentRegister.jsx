@@ -21,17 +21,58 @@ import { useAuth } from '../context/AuthContext';
 
 //list of offences
 const OFFENCE_TYPES = [
-  'Speeding',
-  'Running Red Light',
-  'No Seatbelt',
-  'Drunk Driving',
-  'Illegal Parking',
-  'Using Phone While Driving',
-  'Dangerous Driving',
-  'Expired Driver License',
+  'Ascertainment of weight violation',
+  'Assaulting marshal on duty',
+  'Caution sign violation',
+  'Child restraint violation',
+  'Child sitting position violation',
+  'Construction area speed limit violation',
+  'Dangerous driving',
+  'Do not move violation',
+  "Driver's licence violation",
+  'Driving right-hand steering vehicle',
+  'Driving under alcohol or drug influence',
+  'Driving with expired/without spare tyre',
+  'Driving with worn-out tyre',
+  'Excessive smoke emission',
+  'Failure to cover unstable materials',
+  'Failure to fix red flag on projected load',
+  'Failure to move over',
+  'Failure to install speed limiting device',
+  'Failure to report road crash',
+  'Fire extinguisher violation',
+  'Fleet operation violation',
+  'Inadequate construction warning sign',
+  'Instructors permit and training violation',
+  'Latching and twist-locks violation',
+  'Learners driving regulation violation',
+  'Light/sign violation',
+  'Obstructing marshal on duty',
+  'Operating a vehicle with forged documents',
+  'Operating mechanically deficient vehicle',
+  'Other offences/violations',
   'Overloading',
-  'Driving Against Traffic',
-  ];
+  "Passengers' manifest violation",
+  'Projected load in excess of prescribed limit',
+  'Riding motorcycle without crash helmet',
+  'Failure to install speed limiting device (commercial)',
+  'Road marking violation',
+  'Road obstruction',
+  'Route violation',
+  'School bus violation',
+  'Seat belt violation',
+  'Speed limit violation',
+  'Unauthorised removal/tampering with road signs',
+  'Under-age driving/riding (under 18 years)',
+  'Use of phone while driving',
+  'Use of sirens violation',
+  'Vehicle identification tag violation',
+  'Vehicle licence violation',
+  'Vehicle mirror violation',
+  'Vehicle number plate violation',
+  'Vehicle windshield violation',
+  'Wrongful overtaking',
+];
 
 const VEHICLE_TYPES = ['Car', 'Motorcycle', 'Trailer', 'Truck', 'Bus', 'Tricycle'];
 
@@ -50,7 +91,7 @@ function getSystemDateTime() {
   const ss = String(now.getSeconds()).padStart(2, '0');
   return {
     date: `${yyyy}-${mm}-${dd}`,
-    time: `${hh}:${min}:${ss}`,
+    time: `${hh}:${min}`,
   };
 }
 
@@ -72,6 +113,8 @@ function IncidentRegister() {
     date: initialClock.date,
     time: initialClock.time,
     description: '',
+    stateRegistered: '',
+    videoFileName: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -79,19 +122,9 @@ function IncidentRegister() {
   const [lastPlate, setLastPlate] = useState('');
   const [error, setError] = useState(null);
 
-  // Keep system date and time continuously synchronized with the live system clock
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const current = getSystemDateTime();
-      setForm((prev) => ({
-        ...prev,
-        date: current.date,
-        time: current.time,
-      }));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  // Date and Time are now editable fields using native inputs.
+// Previously they were auto‑synchronised and read‑only.
+// Users can manually select a date via the calendar picker and a time via the time picker.
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -260,7 +293,7 @@ function IncidentRegister() {
               name="bodyNumber"
               value={form.bodyNumber}
               onChange={handleChange}
-              placeholder="e.g. CAB-92 or BD-104"
+              placeholder="e.g. MOT-2001"
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm uppercase font-mono bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
           </div>
@@ -295,7 +328,7 @@ function IncidentRegister() {
               name="vehicleMake"
               value={form.vehicleMake}
               onChange={handleChange}
-              placeholder="e.g. Toyota, Honda, Dangote"
+              placeholder="e.g. Toyota, Honda, Kia, etc."
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
           </div>
@@ -344,21 +377,18 @@ function IncidentRegister() {
                 Time (System Captured)
               </label>
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                
+                {/* optional system‑time hint */}
               </span>
             </div>
             <div className="relative">
               <input
+                type="time"
                 name="time"
                 value={form.time}
-                readOnly
-                title="Automatically captured from current system time"
-                className="w-full border border-emerald-200 rounded-lg px-3.5 py-2.5 text-sm font-mono font-bold bg-emerald-50/50 text-emerald-950 cursor-not-allowed select-none"
+                onChange={handleChange}
+                className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
               />
-              <span className="absolute right-3 top-3 text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-                Live
-              </span>
+
             </div>
           
           </div>
@@ -378,9 +408,8 @@ function IncidentRegister() {
               type="date"
               name="date"
               value={form.date}
-              readOnly
-              title="Automatically captured from current system date"
-              className="w-full border border-emerald-200 rounded-lg px-3.5 py-2.5 text-sm font-mono font-bold bg-emerald-50/50 text-emerald-950 cursor-not-allowed select-none"
+              onChange={handleChange}
+              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
                    </div>
 
@@ -410,7 +439,7 @@ function IncidentRegister() {
                   name="otherOffence"
                   value={form.otherOffence}
                   onChange={handleChange}
-                  placeholder="Specify violation name / code..."
+                  placeholder="Specify violation name"
                   className="w-full border border-emerald-300 rounded-lg px-3 py-2 text-xs bg-emerald-50/40 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600"
                 />
               </div>
@@ -427,7 +456,7 @@ function IncidentRegister() {
               name="location"
               value={form.location}
               onChange={handleChange}
-              placeholder="e.g. Lekki Toll Plaza or Outer Ring Road"
+              placeholder="e.g. Tombia Round About, or Berdger Junction"
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
           </div>
@@ -445,6 +474,36 @@ function IncidentRegister() {
             onChange={handleChange}
             rows={3}
             placeholder="Additional context, circumstances, or officer observations..."
+            className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+          />
+        </div>
+
+        {/* State Registered */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+            <FileText size={14} className="text-emerald-700" />
+            State Registered
+          </label>
+          <input
+            name="stateRegistered"
+            value={form.stateRegistered}
+            onChange={handleChange}
+            placeholder="e.g. Bayelsa"
+            className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+          />
+        </div>
+
+        {/* Video File Name */}
+        <div>
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
+            <FileText size={14} className="text-emerald-700" />
+            Video File Name
+          </label>
+          <input
+            name="videoFileName"
+            value={form.videoFileName}
+            onChange={handleChange}
+            placeholder="e.g. incident123.mp4"
             className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
           />
         </div>

@@ -10,6 +10,8 @@ function Table({
   emptyMessage = 'No records found matching your criteria.',
   onRowClick = null,
 }) {
+  const rows = Array.isArray(data) ? data : [];
+
   return (
     <div className="w-full overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -43,7 +45,7 @@ function Table({
                   </div>
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : rows.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
@@ -55,7 +57,7 @@ function Table({
                 </td>
               </tr>
             ) : (
-              data.map((row, idx) => {
+              rows.map((row, idx) => {
                 const rowKey = row[keyField] || idx;
                 return (
                   <tr

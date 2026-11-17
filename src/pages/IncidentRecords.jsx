@@ -49,7 +49,7 @@ function IncidentRecords() {
     if (!filtered || filtered.length === 0) return;
     const headers = [
       'Plate Number',
-      'Body Number',
+      'MOT Number',
       'Vehicle Type',
       'Make',
       'Model',
@@ -126,7 +126,7 @@ function IncidentRecords() {
 
   // Table columns displaying the details captured on the register incident page:
   // 1. Vehicle Plate Number
-  // 2. Body Number
+  // 2. MOT Number
   // 3. Vehicle Type
   // 4. Make
   // 5. Model
@@ -148,7 +148,7 @@ function IncidentRecords() {
       ),
     },
     {
-      label: 'Body Number',
+      label: 'MOT Number',
       key: 'bodyNumber',
       render: (val) => (
         <span className="font-mono font-bold text-xs text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -391,7 +391,7 @@ function IncidentRecords() {
           footer={
             <div className="flex items-center justify-between w-full">
               <span className="text-xs text-slate-500 font-mono">
-                System Time & Date Certified
+              
               </span>
               <Button
                 variant="primary"
@@ -415,7 +415,7 @@ function IncidentRecords() {
                 </p>
                 {activeRecord.bodyNumber && activeRecord.bodyNumber !== '—' && (
                   <span className="inline-block mt-1 text-[11px] font-mono text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded font-bold border border-emerald-300">
-                    Body Number: {activeRecord.bodyNumber}
+                    MOT Number: {activeRecord.bodyNumber}
                   </span>
                 )}
               </div>
@@ -438,7 +438,7 @@ function IncidentRecords() {
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                    Body Number
+                    MOT Number
                   </span>
                   <span className="font-mono text-sm font-semibold text-slate-800">
                     {activeRecord.bodyNumber && activeRecord.bodyNumber !== '—'

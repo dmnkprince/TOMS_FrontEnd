@@ -14,7 +14,7 @@ function Header({ onMenuClick = () => {} }) {
     navigate('/login');
   };
 
-  const roleLabel = (user?.role && ROLE_LABELS[user.role]) || user?.role || 'Enforcement Agent';
+  const roleLabel = (user?.role && ROLE_LABELS[user.role]) || user?.role || 'Agent';
 
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between h-16 px-4 sm:px-6 bg-white border-b border-slate-200/90 shadow-2xs">
@@ -42,7 +42,7 @@ function Header({ onMenuClick = () => {} }) {
         <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
           <div className="hidden sm:block text-right">
             <p className="text-xs font-bold text-slate-900 leading-tight">
-              {user?.full_name || 'Enforcement Officer'}
+              {user?.full_name || 'Officer'}
             </p>
             <p className="text-[10px] text-emerald-700 font-semibold tracking-wide">
               {roleLabel} {user?.badge_number ? `· #${user.badge_number}` : ''}
