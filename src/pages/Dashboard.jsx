@@ -165,7 +165,7 @@ function Dashboard() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full sm:w-auto">
-          <Link to="/incidents/register" className="w-full sm:w-auto">
+        {/*  <Link to="/incidents/register" className="w-full sm:w-auto">
             <Button
               variant="primary"
               size="md"
@@ -174,12 +174,12 @@ function Dashboard() {
             >
               Register Incident
             </Button>
-          </Link>
+          </Link>*/}
           <Link to="/incidents" className="w-full sm:w-auto">
             <Button variant="secondary" size="md" icon={FileSpreadsheet} className="w-full sm:w-auto py-2.5 sm:py-2">
               View All Records
             </Button>
-          </Link>
+		</Link>
         </div>
       </div>
 

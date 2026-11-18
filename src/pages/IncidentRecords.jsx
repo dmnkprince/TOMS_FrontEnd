@@ -295,7 +295,7 @@ function IncidentRecords() {
                 Incident Records
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Displays verified traffic incident details. Date and time are automatically recorded from the system clock.
+                Displays records of  traffic incident.
               </p>
             </div>
           </div>
@@ -323,7 +323,7 @@ function IncidentRecords() {
             Refresh
           </Button>
 
-          <Link to="/incidents/register">
+		  {/*  <Link to="/incidents/register">
             <Button
               variant="primary"
               size="md"
@@ -332,7 +332,7 @@ function IncidentRecords() {
             >
               Register Incident
             </Button>
-          </Link>
+          </Link> */}
         </div>
       </div>
 

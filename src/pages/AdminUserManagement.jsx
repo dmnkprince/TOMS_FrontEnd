@@ -392,7 +392,7 @@ function AdminUserManagement() {
             data={users}
             columns={[
               { label: 'Full Name', key: 'full_name' },
-              { label: 'Badge', key: 'badge_number' },
+              { label: 'Badge / ID Number', key: 'badge_number' },
               { label: 'Email', key: 'email' },
               {
                 label: 'Role',

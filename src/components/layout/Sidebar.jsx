@@ -24,7 +24,7 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
       to: '/dashboard',
       label: 'Dashboard',
       icon: LayoutDashboard,
-      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
+      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.FIELD_AGENT],
     },
     {
       to: '/incidents/register',
@@ -36,19 +36,19 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
       to: '/incidents',
       label: 'Reports',
       icon: FileSpreadsheet,
-      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
+      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.FIELD_AGENT],
     },
     {
       to: '/admin/users',
       label: 'Password Approvals & Users',
       icon: Users2,
-      roles: [ROLES.ADMIN],
+      roles: [ROLES.SUPERVISOR, ROLES.ADMIN],
     },
     {
       to: '/profile',
       label: 'Officer Profile',
       icon: UserCheck,
-      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
+      roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.FIELD_AGENT],
     },
   ];
 
