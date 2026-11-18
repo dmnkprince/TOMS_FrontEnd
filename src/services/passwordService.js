@@ -149,6 +149,8 @@ export async function approvePasswordRequest(requestId, adminUser) {
 
   // If found and approved on backend but not in localStorage
   if (backendResult) {
+    requests.unshift(backendResult);
+    saveStoredRequests(requests);
     return {
       success: true,
       message: `Password change request approved by Administrator.`,
@@ -203,6 +205,8 @@ export async function rejectPasswordRequest(requestId, adminUser, reason = '') {
   }
 
   if (backendResult) {
+    requests.unshift(backendResult);
+    saveStoredRequests(requests);
     return {
       success: true,
       message: `Password change request has been rejected.`,
