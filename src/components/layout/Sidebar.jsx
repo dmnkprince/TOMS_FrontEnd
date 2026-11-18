@@ -34,7 +34,7 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
     },
     {
       to: '/incidents',
-      label: 'Incident Records',
+      label: 'Reports',
       icon: FileSpreadsheet,
       roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN],
     },

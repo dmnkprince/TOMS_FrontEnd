@@ -196,7 +196,7 @@ function IncidentRegister() {
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Capture vehicle violation details directly onto the live traffic registry.
+            Capture vehicle violation details directly onto the traffic Offence registry.
           </p>
         </div>
 
@@ -260,10 +260,7 @@ function IncidentRegister() {
               Fill in the vehicle and offence details below.
             </p>
           </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold w-fit">
-            <Sparkles size={14} className="text-emerald-700" />
-            <span>Patrol Field Terminal</span>
-          </div>
+          
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
