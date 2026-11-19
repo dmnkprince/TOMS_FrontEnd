@@ -1,5 +1,6 @@
 // src/services/incidentService.js
 import { apiClient } from './apiClient';
+import { enqueue, syncQueue } from './offlineQueue';
 
 const STORAGE_KEY = 'toms_custom_incidents';
 
@@ -18,7 +19,7 @@ const initialSampleIncidents = [
     location: 'Lekki-Epe Expressway Km 14',
     date: '2026-11-12',
     description: 'Vehicle clocked exceeding 60km/h zone at 94km/h.',
-    agent_id: 'c0000000-0000-0000-0000-000000000003', // Officer David Okafor
+    agent_id: 'c0000000-0000-0000-0000-000000000003',
     registered_by: 'officer.david@toms.gov',
     created_at: new Date(Date.now() - 3600 * 1000 * 24).toISOString(),
   },
@@ -35,7 +36,7 @@ const initialSampleIncidents = [
     location: 'Herbert Macaulay Junction, CBD',
     date: '2026-11-11',
     description: 'Vehicle failed to yield and crossed red traffic signal during high traffic.',
-    agent_id: 'c0000000-0000-0000-0000-000000000004', // Officer Aisha Bello
+    agent_id: 'c0000000-0000-0000-0000-000000000004',
     registered_by: 'officer.aisha@toms.gov',
     created_at: new Date(Date.now() - 3600 * 1000 * 48).toISOString(),
   },
@@ -52,7 +53,7 @@ const initialSampleIncidents = [
     location: 'Kano Ring Road Interchange',
     date: '2026-11-10',
     description: 'Driver observed actively operating handheld cellular device while in motion.',
-    agent_id: 'c0000000-0000-0000-0000-000000000003', // Officer David Okafor
+    agent_id: 'c0000000-0000-0000-0000-000000000003',
     registered_by: 'officer.david@toms.gov',
     created_at: new Date(Date.now() - 3600 * 1000 * 72).toISOString(),
   },
@@ -118,7 +119,6 @@ export const getIncidents = async (currentUser = null, params = {}) => {
     const data = response.data?.data || response.data || [];
     const serverIncidents = Array.isArray(data) ? data : data.incidents || [];
 
-    // Map server incidents to the details captured on the register incident page
     const mappedServer = serverIncidents.map((s) => {
       const dt = s.incident_date ? new Date(s.incident_date) : new Date();
       const formattedTime = !isNaN(dt.getTime())
@@ -161,9 +161,6 @@ export const getIncidents = async (currentUser = null, params = {}) => {
       }
     }
 
-    // Role-based visibility:
-    // Officers/agents can only view incidents they registered.
-    // Admins and supervisors can view incidents recorded by everyone.
     if (isAgent && user) {
       const filteredForAgent = merged.filter((item) => {
         return (
@@ -181,7 +178,6 @@ export const getIncidents = async (currentUser = null, params = {}) => {
   } catch (err) {
     console.warn('Backend unavailable, serving locally cached incidents', err);
 
-    // Apply role-based visibility to offline/local storage
     if (isAgent && user) {
       const filteredForAgent = localList.filter((item) => {
         return (
@@ -210,7 +206,6 @@ export const createIncident = async (formData, currentUser = null) => {
     } catch (e) {}
   }
 
-  // Capture current system date and time automatically
   const now = new Date();
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -238,48 +233,71 @@ export const createIncident = async (formData, currentUser = null) => {
     agent_id: user?.id || null,
     registered_by: user?.email || user?.full_name || 'Enforcement Agent',
     created_at: now.toISOString(),
+    _syncStatus: 'pending', // 'synced' | 'pending' | 'queued'
   };
 
   // 1. Immediately store locally for instant presentation
   localList.unshift(newIncident);
   saveStoredIncidents(localList);
 
-  // 2. Also dispatch to backend API
+  // 2. Build API payload
+  let isoTimestamp;
   try {
-    let isoTimestamp;
-    try {
-      isoTimestamp = new Date(`${newIncident.date}T${newIncident.time}`).toISOString();
-    } catch (e) {
-      isoTimestamp = now.toISOString();
-    }
+    isoTimestamp = new Date(`${newIncident.date}T${newIncident.time}`).toISOString();
+  } catch (e) {
+    isoTimestamp = now.toISOString();
+  }
 
-    const payload = {
-      plate_number: newIncident.vehiclePlate,
-      body_number: newIncident.bodyNumber !== '—' ? newIncident.bodyNumber : null,
-      vehicle_type: newIncident.vehicleType,
-      vehicle_make: newIncident.vehicleMake !== '—' ? newIncident.vehicleMake : 'Standard',
-      vehicle_model: newIncident.vehicleModel !== '—' ? newIncident.vehicleModel : 'Standard',
-      vehicle_color: newIncident.vehicleColor !== '—' ? newIncident.vehicleColor : 'Standard',
-      manual_location: newIncident.location,
-      time: newIncident.time,
-      date: newIncident.date,
-      incident_date: isoTimestamp,
-      remarks: newIncident.description,
-      offences: [
-        {
-          offence_type_id: 'off-spd-01',
-          fine_amount: 15000,
-          notes: newIncident.offenceType,
-        },
-      ],
-    };
+  const payload = {
+    plate_number: newIncident.vehiclePlate,
+    body_number: newIncident.bodyNumber !== '—' ? newIncident.bodyNumber : null,
+    vehicle_type: newIncident.vehicleType,
+    vehicle_make: newIncident.vehicleMake !== '—' ? newIncident.vehicleMake : 'Standard',
+    vehicle_model: newIncident.vehicleModel !== '—' ? newIncident.vehicleModel : 'Standard',
+    vehicle_color: newIncident.vehicleColor !== '—' ? newIncident.vehicleColor : 'Standard',
+    manual_location: newIncident.location,
+    time: newIncident.time,
+    date: newIncident.date,
+    incident_date: isoTimestamp,
+    remarks: newIncident.description,
+    offences: [
+      {
+        offence_type_id: 'off-spd-01',
+        fine_amount: 15000,
+        notes: newIncident.offenceType,
+      },
+    ],
+  };
+
+  // 3. Try to send to backend; enqueue if offline/failed
+  try {
     await apiClient.post('/incidents', payload);
+    // Mark as synced in local storage
+    const updated = getStoredIncidents().map((i) =>
+      i.id === newIncident.id ? { ...i, _syncStatus: 'synced' } : i
+    );
+    saveStoredIncidents(updated);
+    newIncident._syncStatus = 'synced';
   } catch (err) {
-    console.warn('Incident saved locally; backend push had error:', err.message);
+    // Queue for later sync when back online
+    await enqueue(payload, newIncident);
+    const updated = getStoredIncidents().map((i) =>
+      i.id === newIncident.id ? { ...i, _syncStatus: 'queued' } : i
+    );
+    saveStoredIncidents(updated);
+    newIncident._syncStatus = 'queued';
+    console.warn('[incidentService] Incident queued for offline sync:', err.message);
   }
 
   return { data: newIncident };
 };
+
+/**
+ * Attempt to sync any queued offline incidents.
+ * Call this on app startup or when the user comes back online.
+ * Returns { synced, failed }
+ */
+export const syncOfflineIncidents = () => syncQueue(apiClient);
 
 export const getIncident = (id) => apiClient.get(`/incidents/${id}`);
 export const updateIncident = (id, data) => apiClient.put(`/incidents/${id}`, data);

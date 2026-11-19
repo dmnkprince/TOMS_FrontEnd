@@ -23,6 +23,7 @@ import {
   requestPasswordChange,
   getPasswordRequests,
 } from '../services/passwordService';
+import NotificationToggle from '../components/pwa/NotificationToggle';
 
 function UserProfile() {
   const { user } = useAuth();
@@ -420,6 +421,14 @@ function UserProfile() {
             </div>
           </div>
         )}
+      </Card>
+
+      {/* ── Notifications ── */}
+      <Card className="p-5">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-widest text-emerald-400">
+          Notifications
+        </h3>
+        <NotificationToggle />
       </Card>
     </div>
   );

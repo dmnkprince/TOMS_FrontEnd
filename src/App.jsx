@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import DashboardLayout from './components/layout/DashboardLayout';
+import PWAPrompts from './components/pwa/PWAPrompts';
 
 // Pages
 import Login from './pages/Login';
@@ -114,6 +115,7 @@ function App() {
       <ToastProvider>
         <BrowserRouter>
           <AppRoutes />
+          <PWAPrompts />
         </BrowserRouter>
       </ToastProvider>
     </AuthProvider>
