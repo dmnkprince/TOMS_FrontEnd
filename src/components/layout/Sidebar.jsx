@@ -47,6 +47,12 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
       icon: Users2,
       roles: [ROLES.SUPERVISOR, ROLES.ADMIN],
     },
+	{
+      to: '/admin/export-reports',
+      label: 'Export Reports',
+      icon: Download,
+      roles: [ROLES.ADMIN, ROLES.SUPERVISOR],
+    },
     {
       to: '/profile',
       label: 'Officer Profile',
@@ -54,40 +60,7 @@ function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
       roles: [ROLES.AGENT, ROLES.SUPERVISOR, ROLES.ADMIN, ROLES.FIELD_AGENT]
 
     },
-    {
-      to: '/admin/export-reports',
-      label: 'Export Reports',
-      icon: Download,
-      roles: [ROLES.ADMIN],
-      action: async () => {
-        try {
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/auth/export/reports`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          });
-          if (!response.ok) {
-            const msg = await response.text();
-            throw new Error(`Server responded ${response.status}: ${msg}`);
-          }
-          const blob = await response.blob();
-          const disposition = response.headers.get('Content-Disposition');
-          let filename = 'reports.zip';
-          if (disposition && disposition.includes('filename=')) {
-            filename = disposition.split('filename=')[1].replace(/\"/g, '').trim();
-          }
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-        } catch (err) {
-          console.error('Export reports failed:', err);
-          alert('Failed to download reports: ' + err.message);
-        }
-      },
-    },
+    
   ];
 
   const visibleLinks = links.filter((link) => link.roles.includes(role));
