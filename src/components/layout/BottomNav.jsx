@@ -24,12 +24,12 @@ function BottomNav() {
     },
     {
       to: '/incidents',
-      label: 'Records',
+      label: 'Report',
       icon: FileSpreadsheet,
     },
     {
       to: '/incidents/register',
-      label: 'Register',
+      label: 'New incidents',
       icon: FilePlus2,
       isPrimary: true, // Prominent center action
     },
