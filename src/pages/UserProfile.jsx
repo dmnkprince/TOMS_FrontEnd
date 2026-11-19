@@ -172,7 +172,7 @@ function UserProfile() {
       {/* Profile Details Card */}
       <Card
         title="Officer Credentials & Information"
-        subtitle="Immutable badge identification and officer contact details"
+        subtitle=""
         action={
           !editing && (
             <Button

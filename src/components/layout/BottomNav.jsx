@@ -14,40 +14,43 @@ import { ROLES } from '../../constants/roles';
 function BottomNav() {
   const { user } = useAuth();
   const role = user?.role || ROLES.AGENT;
-  const isAdmin = role === ROLES.ADMIN;
 
-  const navItems = [
+  // Exact 5 original menu items filtered by role
+  const allNavItems = [
     {
       to: '/dashboard',
       label: 'Home',
       icon: LayoutDashboard,
+      roles: [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.AGENT, ROLES.FIELD_AGENT],
     },
     {
       to: '/incidents',
       label: 'Report',
       icon: FileSpreadsheet,
+      roles: [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.AGENT, ROLES.FIELD_AGENT],
     },
     {
       to: '/incidents/register',
       label: 'New incidents',
       icon: FilePlus2,
       isPrimary: true, // Prominent center action
+      roles: [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.AGENT],
     },
-    ...(isAdmin
-      ? [
-          {
-            to: '/admin/users',
-            label: 'Admin',
-            icon: Users2,
-          },
-        ]
-      : []),
+    {
+      to: '/admin/users',
+      label: 'Admin',
+      icon: Users2,
+      roles: [ROLES.ADMIN, ROLES.SUPERVISOR],
+    },
     {
       to: '/profile',
       label: 'Profile',
       icon: UserCheck,
+      roles: [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.AGENT, ROLES.FIELD_AGENT],
     },
   ];
+
+  const navItems = allNavItems.filter((item) => item.roles.includes(role));
 
   return (
     <nav
@@ -61,7 +64,7 @@ function BottomNav() {
               <NavLink
                 key={to}
                 to={to}
-                className={({ isActive }) =>
+                className={() =>
                   `flex flex-col items-center justify-center -mt-5 group focus:outline-none`
                 }
               >
