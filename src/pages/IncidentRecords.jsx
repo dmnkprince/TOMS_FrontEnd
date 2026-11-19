@@ -302,7 +302,7 @@ function IncidentRecords() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
+		{/* <Button
             variant="secondary"
             size="md"
             icon={Download}
@@ -310,7 +310,7 @@ function IncidentRecords() {
             title="Export incidents report to CSV"
           >
             Export Report
-          </Button>
+</Button> */}
 
           <Button
             variant="secondary"

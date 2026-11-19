@@ -12,7 +12,9 @@ import Dashboard from './pages/Dashboard';
 import IncidentRegister from './pages/IncidentRegister';
 import IncidentRecords from './pages/IncidentRecords';
 import AdminUserManagement from './pages/AdminUserManagement';
+import ExportReports from './pages/ExportReports';
 import UserProfile from './pages/UserProfile';
+
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -38,6 +40,17 @@ function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Authenticated Application Terminal */}
+        {/* Export Profiles Route */}
+        <Route
+          path="/admin/export-reports"
+          element={
+            <ProtectedRoute>
+              <DashboardLayout>
+                <ExportReports />
+              </DashboardLayout>
+            </ProtectedRoute>
+          }
+        />
       <Route
         path="/dashboard"
         element={
