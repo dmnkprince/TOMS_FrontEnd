@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import DashboardLayout from './components/layout/DashboardLayout';
 import PWAPrompts from './components/pwa/PWAPrompts';
+import SessionTimeoutModal from './components/auth/SessionTimeoutModal';
 
 // Pages
 import Login from './pages/Login';
@@ -116,6 +117,7 @@ function App() {
         <BrowserRouter>
           <AppRoutes />
           <PWAPrompts />
+          <SessionTimeoutModal />
         </BrowserRouter>
       </ToastProvider>
     </AuthProvider>
