@@ -293,7 +293,11 @@ export const createIncident = async (formData, currentUser = null) => {
     );
     saveStoredIncidents(updated);
     newIncident._syncStatus = 'queued';
-    console.warn('[incidentService] Incident queued for offline sync:', err.message);
+    console.error(
+      '[incidentService] Incident could not be saved to server, queued locally:',
+      err.response?.status,
+      err.response?.data?.message || err.message
+    );
   }
 
   return { data: newIncident };

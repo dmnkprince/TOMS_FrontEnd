@@ -2,7 +2,9 @@
 import axios from 'axios';
 
 // Ensure baseURL always ends with /api/v1 regardless of how VITE_API_BASE_URL was configured
-const rawBase = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1').trim();
+const rawBase = (
+  import.meta.env.VITE_API_BASE_URL || 'https://tmsbkndpwa.onrender.com/api/v1'
+).trim();
 const cleanBase = rawBase.replace(/\/+$/, '');
 const baseURL = cleanBase.endsWith('/api/v1') ? cleanBase : `${cleanBase}/api/v1`;
 

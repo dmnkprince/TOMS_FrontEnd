@@ -21,7 +21,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { Card, Table, Button, Input, Select, SearchableSelect, Badge, Modal } from '../components/ui';
-import { getIncidents } from '../services/incidentService';
+import { getIncidents, syncOfflineIncidents } from '../services/incidentService';
 import { useAuth } from '../context/AuthContext';
 import { NIGERIAN_STATES } from '../constants/states';
 
@@ -41,6 +41,8 @@ function IncidentRecords() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Sync any pending offline records if online
+      await syncOfflineIncidents().catch(() => {});
       const res = await getIncidents(user);
       const list = res.data || [];
       setIncidents(list);
