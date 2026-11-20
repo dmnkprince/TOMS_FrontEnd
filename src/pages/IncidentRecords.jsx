@@ -20,9 +20,10 @@ import {
   CheckCircle2,
   RotateCcw,
 } from 'lucide-react';
-import { Card, Table, Button, Input, Select, Badge, Modal } from '../components/ui';
+import { Card, Table, Button, Input, Select, SearchableSelect, Badge, Modal } from '../components/ui';
 import { getIncidents } from '../services/incidentService';
 import { useAuth } from '../context/AuthContext';
+import { NIGERIAN_STATES } from '../constants/states';
 
 function IncidentRecords() {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ function IncidentRecords() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedOffence, setSelectedOffence] = useState('');
+  const [selectedState, setSelectedState] = useState('');
   const [selectedVehicleType, setSelectedVehicleType] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -62,6 +64,7 @@ function IncidentRecords() {
       'Date',
       'Offence Type',
       'Location',
+      'State Registered',
       'Description',
     ];
     const rows = filtered.map((r) => [
@@ -75,6 +78,7 @@ function IncidentRecords() {
       `"${r.date || ''}"`,
       `"${r.offenceType || ''}"`,
       `"${r.location || ''}"`,
+      `"${r.stateRegistered || ''}"`,
       `"${(r.description || '').replace(/"/g, '""')}"`,
     ]);
     const csvContent =
@@ -159,16 +163,25 @@ function IncidentRecords() {
       row.vehicleColor?.toLowerCase().includes(term) ||
       row.time?.toLowerCase().includes(term) ||
       row.location?.toLowerCase().includes(term) ||
+      row.stateRegistered?.toLowerCase().includes(term) ||
       row.offenceType?.toLowerCase().includes(term) ||
       row.date?.toLowerCase().includes(term) ||
       row.description?.toLowerCase().includes(term);
 
     const matchesOffence = !selectedOffence || row.offenceType === selectedOffence;
+    const matchesState = !selectedState || row.stateRegistered?.toLowerCase() === selectedState.toLowerCase();
     const matchesVehicleType =
       !selectedVehicleType || row.vehicleType === selectedVehicleType;
     const matchesStartDate = !startDate || (row.date && row.date >= startDate);
     const matchesEndDate = !endDate || (row.date && row.date <= endDate);
-    return matchesSearch && matchesOffence && matchesVehicleType && matchesStartDate && matchesEndDate;
+    return (
+      matchesSearch &&
+      matchesOffence &&
+      matchesState &&
+      matchesVehicleType &&
+      matchesStartDate &&
+      matchesEndDate
+    );
   });
 
   // Table columns displaying the details captured on the register incident page:
@@ -299,6 +312,15 @@ function IncidentRecords() {
       ),
     },
     {
+      label: 'State',
+      key: 'stateRegistered',
+      render: (val) => (
+        <span className="text-xs font-semibold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+          {val && val !== '—' ? val : '—'}
+        </span>
+      ),
+    },
+    {
       label: 'Description / Notes',
       key: 'description',
       render: (val) => (
@@ -386,13 +408,24 @@ function IncidentRecords() {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:flex items-center gap-3 w-full md:w-auto">
-              <div className="w-full md:w-52">
-                <Select
+            <div className="grid grid-cols-1 sm:grid-cols-3 md:flex items-center gap-3 w-full md:w-auto">
+              <div className="w-full md:w-56">
+                <SearchableSelect
                   placeholder="All Offence Types"
+                  searchPlaceholder="Filter offence..."
                   value={selectedOffence}
-                  onChange={(e) => setSelectedOffence(e.target.value)}
-                  options={offenceOptions.map((o) => ({ value: o, label: o }))}
+                  onChange={(val) => setSelectedOffence(val)}
+                  options={offenceOptions}
+                />
+              </div>
+
+              <div className="w-full md:w-48">
+                <SearchableSelect
+                  placeholder="All States"
+                  searchPlaceholder="Filter state..."
+                  value={selectedState}
+                  onChange={(val) => setSelectedState(val)}
+                  options={NIGERIAN_STATES}
                 />
               </div>
 
@@ -665,7 +698,7 @@ function IncidentRecords() {
                 <Clock size={14} className="text-emerald-700" />
                 Time, Date & Location
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
                     Time (System Captured)
@@ -691,6 +724,16 @@ function IncidentRecords() {
                     title={activeRecord.location}
                   >
                     {activeRecord.location || '—'}
+                  </span>
+                </div>
+                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                    State Registered
+                  </span>
+                  <span className="text-sm font-semibold text-slate-800">
+                    {activeRecord.stateRegistered && activeRecord.stateRegistered !== '—'
+                      ? activeRecord.stateRegistered
+                      : '—'}
                   </span>
                 </div>
               </div>

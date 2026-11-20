@@ -16,8 +16,9 @@ import {
   Hash,
 } from 'lucide-react';
 import { createIncident } from '../services/incidentService';
-import { Button } from '../components/ui';
+import { Button, SearchableSelect } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { NIGERIAN_STATES } from '../constants/states';
 
 //list of offences
 const OFFENCE_TYPES = [
@@ -174,6 +175,8 @@ function IncidentRegister() {
         date: exactSystemClock.date,
         time: exactSystemClock.time,
         description: '',
+        stateRegistered: '',
+        videoFileName: '',
       });
     } catch (err) {
       setError(err.message || 'Failed to register incident. Please try again.');
@@ -371,8 +374,8 @@ function IncidentRegister() {
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <Clock size={14} className="text-emerald-700" />
-                Time (System Captured)
-              </label>
+                Time 
+				</label>
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 {/* optional system‑time hint */}
               </span>
@@ -395,7 +398,7 @@ function IncidentRegister() {
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
                 <Calendar size={14} className="text-emerald-700" />
-                Date (System Captured)
+                Date 
               </label>
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                 
@@ -410,25 +413,17 @@ function IncidentRegister() {
             />
                    </div>
 
-          {/* Offence Type */}
+          {/* Offence Type (Searchable Dropdown) */}
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-              Offence Type <span className="text-emerald-700">*</span>
-            </label>
-            <select
-              name="offenceType"
-              value={form.offenceType}
-              onChange={handleChange}
+            <SearchableSelect
+              label="Offence Type"
               required
-              className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
-            >
-              <option value="">Select violation code...</option>
-              {OFFENCE_TYPES.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+              options={OFFENCE_TYPES}
+              value={form.offenceType}
+              onChange={(val) => setForm((prev) => ({ ...prev, offenceType: val }))}
+              placeholder="Select violation code..."
+              searchPlaceholder="Type to search violation..."
+            />
 
             {form.offenceType === 'Others' && (
               <div className="mt-2 animate-in fade-in">
@@ -475,18 +470,16 @@ function IncidentRegister() {
           />
         </div>
 
-        {/* State Registered */}
+        {/* State Registered (Searchable Dropdown) */}
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
-            <FileText size={14} className="text-emerald-700" />
-            State Registered
-          </label>
-          <input
-            name="stateRegistered"
+          <SearchableSelect
+            label="State Registered"
+            icon={MapPin}
+            options={NIGERIAN_STATES}
             value={form.stateRegistered}
-            onChange={handleChange}
-            placeholder="e.g. Bayelsa"
-            className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+            onChange={(val) => setForm((prev) => ({ ...prev, stateRegistered: val }))}
+            placeholder="Select registered state..."
+            searchPlaceholder="Type to search state (e.g. Lagos, Abuja, Rivers)..."
           />
         </div>
 
