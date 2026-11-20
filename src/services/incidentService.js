@@ -108,11 +108,7 @@ export const getIncidents = async (currentUser = null, params = {}) => {
     } catch (e) {}
   }
 
-  const isAgent = user?.role === 'agent' || user?.role === 'officer';
   const queryParams = { ...params };
-  if (isAgent && user?.id) {
-    queryParams.agent_id = user.id;
-  }
 
   try {
     const response = await apiClient.get('/incidents', { params: queryParams });
@@ -163,36 +159,9 @@ export const getIncidents = async (currentUser = null, params = {}) => {
       }
     }
 
-    if (isAgent && user) {
-      const filteredForAgent = merged.filter((item) => {
-        return (
-          (item.agent_id && item.agent_id === user.id) ||
-          (item.registered_by &&
-            (item.registered_by === user.email ||
-              item.registered_by === user.full_name ||
-              item.registered_by === user.badge_number))
-        );
-      });
-      return { data: filteredForAgent };
-    }
-
     return { data: merged };
   } catch (err) {
     console.warn('Backend unavailable, serving locally cached incidents', err);
-
-    if (isAgent && user) {
-      const filteredForAgent = localList.filter((item) => {
-        return (
-          (item.agent_id && item.agent_id === user.id) ||
-          (item.registered_by &&
-            (item.registered_by === user.email ||
-              item.registered_by === user.full_name ||
-              item.registered_by === user.badge_number))
-        );
-      });
-      return { data: filteredForAgent };
-    }
-
     return { data: localList };
   }
 };
