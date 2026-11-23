@@ -1,19 +1,28 @@
-# React + Vite
+# Traffic Offence Management System (TOMS) — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Progressive Web Application (PWA) for field enforcement officers, supervisors, and administrators.
 
-Currently, two official plugins are available:
+## Features
+- **Field Incident Registration:** Record traffic violations with multi-offence selection, automatic penalty calculation, and location logging.
+- **Offline-First & PWA:** Full offline capability with service workers and IndexedDB / LocalStorage queueing for field officers with intermittent connectivity.
+- **Incident Records & Search:** Filter by date, state, offence, and vehicle plate; view incident details, edit records, and print citation notices.
+- **Role-Based Access Control:** Separate portals and permissions for `field_agent`, `agent`, `supervisor`, and `admin`.
+- **Reports & Export:** Excel and CSV export generation for analytics and enforcement audits.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech Stack
+- **Framework:** React 19 + Vite
+- **Styling:** Tailwind CSS + Lucide React icons
+- **Routing:** React Router v7
+- **PWA:** Vite PWA Plugin with custom service worker
 
-## React Compiler
+## Getting Started
+```bash
+# Install dependencies
+npm install
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+# Start local dev server
+npm run dev
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Build for production
+npm run build
+```

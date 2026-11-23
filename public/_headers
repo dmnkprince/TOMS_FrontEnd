@@ -1,0 +1,28 @@
+# TOMS Static Asset CDN & Edge Cache Directives
+
+# Hashed assets: permanent cache with immutable flag (Cache-Busted)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# PWA Manifest & Static Graphics
+/manifest.webmanifest
+  Cache-Control: public, max-age=86400
+/icons.png
+  Cache-Control: public, max-age=604800
+/favicon.svg
+  Cache-Control: public, max-age=604800
+/icons.svg
+  Cache-Control: public, max-age=604800
+
+# HTML shell: revalidate immediately so users always receive fresh PWA bundles
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+
+# Service Worker scripts: NEVER CACHE (browser must check for updates on reload)
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+/sw-push.js
+  Cache-Control: no-cache, no-store, must-revalidate

@@ -19,14 +19,24 @@ import {
   Wrench,
   CheckCircle2,
   RotateCcw,
+  Edit3,
+  Printer,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
-import { Card, Table, Button, Input, Select, SearchableSelect, Badge, Modal } from '../components/ui';
-import { getIncidents, syncOfflineIncidents } from '../services/incidentService';
+import { Card, Table, Button, Input, Select, SearchableSelect, Badge, Modal, useToast } from '../components/ui';
+import { getIncidents, syncOfflineIncidents, deleteIncident } from '../services/incidentService';
 import { useAuth } from '../context/AuthContext';
 import { NIGERIAN_STATES } from '../constants/states';
+import EditIncidentModal from '../components/incidents/EditIncidentModal';
+import PrintIncidentModal from '../components/incidents/PrintIncidentModal';
 
 function IncidentRecords() {
   const { user } = useAuth();
+  const addToast = useToast();
+  const userRole = user?.role ? String(user.role).toLowerCase() : '';
+  const canEdit = userRole === 'admin' || userRole === 'supervisor';
+
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -37,6 +47,68 @@ function IncidentRecords() {
   const [endDate, setEndDate] = useState('');
   const [exporting, setExporting] = useState(false);
   const [activeRecord, setActiveRecord] = useState(null);
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [printingRecord, setPrintingRecord] = useState(null);
+  const [deletingRecord, setDeletingRecord] = useState(null);
+  const [deletingLoading, setDeletingLoading] = useState(false);
+
+  const confirmDeleteRecord = async () => {
+    if (!deletingRecord) return;
+    setDeletingLoading(true);
+    try {
+      const recordId = deletingRecord.id || deletingRecord.reference_number;
+      await deleteIncident(recordId);
+      setIncidents((prev) =>
+        prev.filter(
+          (item) =>
+            item.id !== recordId &&
+            item.reference_number !== recordId &&
+            item.id !== deletingRecord.id &&
+            item.reference_number !== deletingRecord.reference_number
+        )
+      );
+      if (
+        activeRecord &&
+        (activeRecord.id === deletingRecord.id ||
+          activeRecord.reference_number === deletingRecord.reference_number ||
+          activeRecord.id === recordId)
+      ) {
+        setActiveRecord(null);
+      }
+      setDeletingRecord(null);
+      if (addToast) {
+        addToast('Incident record deleted successfully.', 'success');
+      }
+    } catch (err) {
+      console.error('Failed to delete incident', err);
+      if (addToast) {
+        addToast(err.response?.data?.message || err.message || 'Failed to delete record.', 'error');
+      }
+    } finally {
+      setDeletingLoading(false);
+    }
+  };
+
+  const handleSaveEditedRecord = (updatedRecord) => {
+    setIncidents((prev) =>
+      prev.map((item) => {
+        const matchesId = item.id && (item.id === updatedRecord.id || item.id === updatedRecord.reference_number);
+        const matchesRef = item.reference_number && (item.reference_number === updatedRecord.id || item.reference_number === updatedRecord.reference_number);
+        return matchesId || matchesRef ? { ...item, ...updatedRecord } : item;
+      })
+    );
+    if (
+      activeRecord &&
+      (activeRecord.id === updatedRecord.id ||
+        activeRecord.reference_number === updatedRecord.id ||
+        activeRecord.reference_number === updatedRecord.reference_number)
+    ) {
+      setActiveRecord((prev) => ({ ...prev, ...updatedRecord }));
+    }
+    if (addToast) {
+      addToast('Incident record updated successfully.', 'success');
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -336,18 +408,42 @@ function IncidentRecords() {
       key: 'action',
       align: 'center',
       render: (_, row) => (
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={Eye}
-          onClick={(e) => {
-            e.stopPropagation();
-            setActiveRecord(row);
-          }}
-          className="text-xs font-semibold hover:bg-emerald-50 hover:text-emerald-800"
-        >
-          View
-        </Button>
+        <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Eye}
+            onClick={() => setActiveRecord(row)}
+            className="text-xs font-semibold hover:bg-emerald-50 hover:text-emerald-800"
+            title="View Details"
+          >
+            View
+          </Button>
+          {canEdit && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Edit3}
+                onClick={() => setEditingRecord(row)}
+                className="text-xs font-semibold hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300"
+                title="Edit Record"
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Trash2}
+                onClick={() => setDeletingRecord(row)}
+                className="text-xs font-semibold text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300"
+                title="Delete Record"
+              >
+                Delete
+              </Button>
+            </>
+          )}
+        </div>
       ),
     },
   ];
@@ -373,17 +469,6 @@ function IncidentRecords() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-        {/*  <Button
-            variant="secondary"
-            size="md"
-            icon={Download}
-            onClick={handleExport}
-            loading={exporting}
-            title="Export incident report"
-          >
-            Export Report
-</Button>*/}
-
           <Button
             variant="secondary"
             size="md"
@@ -540,15 +625,54 @@ function IncidentRecords() {
                   </div>
                 </div>
 
-                {/* Location + Tap to View */}
+                {/* Location + Tap to View, Edit, Print or Delete */}
                 <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-100 text-[11px]">
-                  <div className="flex items-center gap-1 text-slate-500 truncate max-w-[70%]">
+                  <div className="flex items-center gap-1 text-slate-500 truncate max-w-[50%]">
                     <MapPin size={13} className="text-emerald-700 shrink-0" />
                     <span className="truncate">{item.location || 'Location Not Specified'}</span>
                   </div>
-                  <span className="text-emerald-800 font-bold flex items-center gap-0.5 shrink-0">
-                    Details <Eye size={12} />
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {canEdit && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingRecord(item);
+                          }}
+                          className="text-emerald-800 font-bold hover:underline flex items-center gap-0.5"
+                          title="Edit"
+                        >
+                          Edit <Edit3 size={11} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPrintingRecord(item);
+                          }}
+                          className="text-slate-700 font-bold hover:underline flex items-center gap-0.5"
+                          title="Print"
+                        >
+                          Print <Printer size={11} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeletingRecord(item);
+                          }}
+                          className="text-rose-700 font-bold hover:underline flex items-center gap-0.5"
+                          title="Delete"
+                        >
+                          Delete <Trash2 size={11} />
+                        </button>
+                      </>
+                    )}
+                    <span className="text-emerald-800 font-bold flex items-center gap-0.5">
+                      Details <Eye size={12} />
+                    </span>
+                  </div>
                 </div>
               </div>
             ))
@@ -576,17 +700,57 @@ function IncidentRecords() {
           subtitle={`Incident Reference: ${activeRecord.id || activeRecord.reference_number || 'N/A'}`}
           size="lg"
           footer={
-            <div className="flex items-center justify-between w-full">
-              <span className="text-xs text-slate-500 font-mono">
-              
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-3 w-full">
+              <div className="flex flex-wrap items-center gap-2">
+                {canEdit && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      icon={Edit3}
+                      onClick={() => {
+                        const rec = activeRecord;
+                        setActiveRecord(null);
+                        setEditingRecord(rec);
+                      }}
+                      className="hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300"
+                    >
+                      Edit 
+					  </Button>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      icon={Printer}
+                      onClick={() => {
+                        const rec = activeRecord;
+                        setPrintingRecord(rec);
+                      }}
+                      className="hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300"
+                    >
+                      Print
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="md"
+                      icon={Trash2}
+                      onClick={() => {
+                        const rec = activeRecord;
+                        setDeletingRecord(rec);
+                      }}
+                      className="text-rose-700 hover:bg-rose-50 hover:text-rose-800 hover:border-rose-300"
+                    >
+                      Delete
+					  </Button>
+                  </>
+                )}
+              </div>
               <Button
                 variant="primary"
                 size="md"
                 onClick={() => setActiveRecord(null)}
               >
-                Close Record
-              </Button>
+                Close 
+				</Button>
             </div>
           }
         >
@@ -670,7 +834,8 @@ function IncidentRecords() {
                                 : activeRecord.vehicleColor.toLowerCase() === 'black'
                                 ? '#111827'
                                 : activeRecord.vehicleColor.toLowerCase() === 'silver' ||
-                                  activeRecord.vehicleColor.toLowerCase() === 'grey'
+                                  activeRecord.vehicleColor.toLowerCase() === 'grey' ||
+                                  activeRecord.vehicleColor.toLowerCase() === 'gray'
                                 ? '#9ca3af'
                                 : activeRecord.vehicleColor.toLowerCase() === 'red' ||
                                   activeRecord.vehicleColor.toLowerCase() === 'maroon'
@@ -763,6 +928,73 @@ function IncidentRecords() {
                 </span>
               </div>
             )}
+          </div>
+        </Modal>
+      )}
+
+      {/* Edit Incident Modal for Admins & Supervisors */}
+      {editingRecord && (
+        <EditIncidentModal
+          isOpen={Boolean(editingRecord)}
+          onClose={() => setEditingRecord(null)}
+          incident={editingRecord}
+          onSave={handleSaveEditedRecord}
+        />
+      )}
+
+      {/* Print Incident Citation Modal for Admins & Supervisors */}
+      {printingRecord && (
+        <PrintIncidentModal
+          isOpen={Boolean(printingRecord)}
+          onClose={() => setPrintingRecord(null)}
+          incident={printingRecord}
+        />
+      )}
+
+      {/* Delete Confirmation Modal for Admins & Supervisors */}
+      {deletingRecord && (
+        <Modal
+          isOpen={Boolean(deletingRecord)}
+          onClose={() => !deletingLoading && setDeletingRecord(null)}
+          title="Confirm Delete Incident Record"
+          subtitle={`Reference: ${deletingRecord.reference_number || deletingRecord.id || 'N/A'}`}
+          size="sm"
+          footer={
+            <div className="flex items-center justify-end gap-2.5 w-full">
+              <Button
+                variant="secondary"
+                size="md"
+                disabled={deletingLoading}
+                onClick={() => setDeletingRecord(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="md"
+                icon={Trash2}
+                loading={deletingLoading}
+                onClick={confirmDeleteRecord}
+                className="bg-rose-600 hover:bg-rose-700 text-white"
+              >
+                Delete Permanently
+              </Button>
+            </div>
+          }
+        >
+          <div className="space-y-3 py-2 text-xs text-slate-700">
+            <p>
+              Are you sure you want to permanently delete the incident record for plate{' '}
+              <strong className="font-mono text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
+                {deletingRecord.vehiclePlate || deletingRecord.plate_number || 'N/A'}
+              </strong>?
+            </p>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 flex items-start gap-2">
+              <AlertTriangle size={16} className="shrink-0 text-amber-600 mt-0.5" />
+              <span>
+                This action cannot be undone. An audit log entry will be permanently recorded for compliance.
+              </span>
+            </div>
           </div>
         </Modal>
       )}

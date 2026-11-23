@@ -124,7 +124,6 @@ function IncidentRegister() {
   const [error, setError] = useState(null);
 
   // Date and Time are now editable fields using native inputs.
-// Previously they were auto‑synchronised and read‑only.
 // Users can manually select a date via the calendar picker and a time via the time picker.
 
   const handleChange = (e) => {
@@ -277,7 +276,7 @@ function IncidentRegister() {
               name="vehiclePlate"
               value={form.vehiclePlate}
               onChange={handleChange}
-              placeholder="e.g. KJA-482-AA"
+              placeholder="e.g. KJA-482AA"
               required
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm uppercase font-mono bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />

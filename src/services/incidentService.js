@@ -280,5 +280,82 @@ export const createIncident = async (formData, currentUser = null) => {
 export const syncOfflineIncidents = () => syncQueue(apiClient);
 
 export const getIncident = (id) => apiClient.get(`/incidents/${id}`);
-export const updateIncident = (id, data) => apiClient.put(`/incidents/${id}`, data);
-export const deleteIncident = (id) => apiClient.delete(`/incidents/${id}`);
+
+export const updateIncident = async (id, data) => {
+  const localList = getStoredIncidents();
+
+  // Format / normalize fields
+  const updatedData = {
+    ...data,
+    id,
+    vehiclePlate: (data.vehiclePlate || data.plate_number || '').trim().toUpperCase(),
+    bodyNumber: data.bodyNumber || data.body_number || '—',
+    vehicleType: data.vehicleType || data.vehicle_type || 'Car',
+    vehicleMake: data.vehicleMake || data.vehicle_make || '—',
+    vehicleModel: data.vehicleModel || data.vehicle_model || '—',
+    vehicleColor: data.vehicleColor || data.vehicle_color || '—',
+    offenceType: data.offenceType || data.offence || 'General Violation',
+    location: data.location || data.manual_location || '—',
+    stateRegistered: data.stateRegistered || data.location_description || '—',
+    videoFileName: data.videoFileName || data.video_file_name || '—',
+    description: data.description || data.remarks || '—',
+    date: data.date,
+    time: data.time,
+    updated_at: new Date().toISOString(),
+  };
+
+  let matched = false;
+  const updatedList = localList.map((item) => {
+    if (item.id === id || item.reference_number === id) {
+      matched = true;
+      return { ...item, ...updatedData };
+    }
+    return item;
+  });
+
+  // If not already in local list, add it
+  if (!matched) {
+    updatedList.unshift(updatedData);
+  }
+
+  saveStoredIncidents(updatedList);
+
+  // Send to backend API
+  const payload = {
+    plate_number: updatedData.vehiclePlate,
+    body_number: updatedData.bodyNumber !== '—' ? updatedData.bodyNumber : null,
+    vehicle_type: updatedData.vehicleType,
+    vehicle_make: updatedData.vehicleMake !== '—' ? updatedData.vehicleMake : 'Standard',
+    vehicle_model: updatedData.vehicleModel !== '—' ? updatedData.vehicleModel : 'Standard',
+    vehicle_color: updatedData.vehicleColor !== '—' ? updatedData.vehicleColor : 'Standard',
+    manual_location: updatedData.location,
+    location_description: updatedData.stateRegistered !== '—' ? updatedData.stateRegistered : null,
+    state_registered: updatedData.stateRegistered !== '—' ? updatedData.stateRegistered : null,
+    time: updatedData.time,
+    date: updatedData.date,
+    remarks: updatedData.description,
+    offenceType: updatedData.offenceType,
+  };
+
+  try {
+    const res = await apiClient.put(`/incidents/${id}`, payload);
+    return { data: res.data?.data || updatedData };
+  } catch (err) {
+    console.warn('Backend update failed or offline, changes preserved locally:', err);
+    return { data: updatedData };
+  }
+};
+
+export const deleteIncident = async (id) => {
+  const localList = getStoredIncidents();
+  const updatedList = localList.filter((item) => item.id !== id && item.reference_number !== id);
+  saveStoredIncidents(updatedList);
+
+  try {
+    const res = await apiClient.delete(`/incidents/${id}`);
+    return { data: res.data?.data || { id, deleted: true } };
+  } catch (err) {
+    console.warn('Backend delete failed or offline, deleted locally:', err);
+    return { data: { id, deleted: true } };
+  }
+};
