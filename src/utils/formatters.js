@@ -1,16 +1,41 @@
 // src/utils/formatters.js
 
+const currencyFormatters = new Map();
+
+const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+const dateFormatter = new Intl.DateTimeFormat('en-GB', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+});
+
+function getCurrencyFormatter(currency = 'NGN') {
+  let formatter = currencyFormatters.get(currency);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+    });
+    currencyFormatters.set(currency, formatter);
+  }
+  return formatter;
+}
+
 /**
  * Formats a currency amount into standard localized display, e.g. ₦5,000.00 or $5,000.00
  */
 export function formatCurrency(amount, currency = 'NGN') {
   if (amount === null || amount === undefined || isNaN(amount)) return '₦0.00';
   const num = Number(amount);
-  return new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2,
-  }).format(num);
+  return getCurrencyFormatter(currency).format(num);
 }
 
 /**
@@ -21,13 +46,7 @@ export function formatDateTime(isoString) {
   try {
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return isoString;
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(d);
+    return dateTimeFormatter.format(d);
   } catch {
     return isoString;
   }
@@ -41,11 +60,7 @@ export function formatDate(isoString) {
   try {
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return isoString;
-    return new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    }).format(d);
+    return dateFormatter.format(d);
   } catch {
     return isoString;
   }
