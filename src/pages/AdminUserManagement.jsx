@@ -12,7 +12,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Card, Table, Badge, Button, Input } from '../components/ui';
+import { Card, Table, Badge, Button, Input, Modal, useDialog } from '../components/ui';
 import {
   getPasswordRequests,
   approvePasswordRequest,
@@ -23,6 +23,7 @@ import { getUsers, createUser, deleteUser, updateUser } from '../services/userSe
 
 function AdminUserManagement() {
   const { user } = useAuth();
+  const { confirm, prompt } = useDialog();
   const roleNormalized = user?.role ? String(user.role).toLowerCase() : '';
   const isAdmin = roleNormalized === 'admin';
   const isSupervisor = roleNormalized === 'supervisor';
@@ -177,8 +178,22 @@ function AdminUserManagement() {
       });
       return;
     }
-    const reason = prompt('Please enter a reason for rejecting this password change:');
-    if (reason === null) return; // Cancelled
+    const targetReq = requests.find((r) => r.id === reqId);
+    const officerLabel = targetReq?.officer_name
+      ? `${targetReq.officer_name} (${targetReq.badge_number || 'No Badge'})`
+      : 'the requesting officer';
+
+    const reason = await prompt({
+      title: 'Reject Password Renewal',
+      subtitle: `Officer: ${officerLabel}`,
+      label: 'Reason for Rejection',
+      placeholder: 'Explain why this password reset request is being rejected...',
+      required: true,
+      variant: 'danger',
+      confirmText: 'Reject Request',
+    });
+
+    if (!reason) return; // Cancelled or empty
     setActionLoading(reqId);
     setFeedback(null);
     try {
@@ -236,7 +251,27 @@ function AdminUserManagement() {
       setFeedback({ type: 'error', text: 'You cannot delete your own account.' });
       return;
     }
-    if (!confirm('Are you sure you want to delete this user?')) return;
+
+    const targetUser = users.find((u) => u.id === userId);
+    const userName = targetUser?.full_name || 'this staff member';
+    const userRole = targetUser?.role || 'staff';
+
+    const confirmed = await confirm({
+      title: 'Delete Staff Member',
+      subtitle: `Target: ${userName} (${userRole})`,
+      message: `Are you sure you want to permanently delete the account for ${userName}?`,
+      variant: 'danger',
+      confirmText: 'Delete Permanently',
+      cancelText: 'Keep Account',
+      children: (
+        <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 text-xs mt-2">
+          This user will immediately lose access to TOMS terminals and recorded activity logs.
+        </div>
+      ),
+    });
+
+    if (!confirmed) return;
+
     setUserActionLoading(userId);
     try {
       await deleteUser(userId);
@@ -455,69 +490,138 @@ function AdminUserManagement() {
       </section>
 
       {/* Add Staff Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-bold mb-4">Add New Staff</h3>
-            <form onSubmit={submitNewStaff} className="space-y-3">
-              <Input name="full_name" placeholder="Full Name" required value={newStaff.full_name} onChange={handleAddChange} />
-              <Input name="badge_number" placeholder="Badge Number" required value={newStaff.badge_number} onChange={handleAddChange} />
-              <Input name="email" type="email" placeholder="Email" required value={newStaff.email} onChange={handleAddChange} />
-              <Input name="password" type="password" placeholder="Password" required value={newStaff.password} onChange={handleAddChange} />
-              <select name="role" value={newStaff.role} onChange={handleAddChange} className="w-full border rounded p-2">
-                <option value="admin">Admin</option>
-                <option value="supervisor">Supervisor</option>
-                <option value="agent">Agent</option>
-                <option value="field_agent">Field Agent</option>
-              </select>
-              <Input name="phone_number" placeholder="Phone (optional)" value={newStaff.phone_number} onChange={handleAddChange} />
-              <div className="flex justify-end space-x-2 mt-4">
-                <Button type="button" variant="secondary" onClick={closeAddModal}>Cancel</Button>
-                <Button type="submit" variant="primary" loading={userActionLoading === 'add'}>Create</Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showAddModal}
+        onClose={closeAddModal}
+        title="Add New Staff Member"
+        subtitle="Create an authorized terminal access account"
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2.5 w-full">
+            <Button type="button" variant="secondary" onClick={closeAddModal}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              loading={userActionLoading === 'add'}
+              onClick={submitNewStaff}
+            >
+              Create Staff
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form onSubmit={submitNewStaff} className="space-y-3.5 py-1">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Full Name <span className="text-rose-500">*</span>
+            </label>
+            <Input name="full_name" placeholder="Full Name" required value={newStaff.full_name} onChange={handleAddChange} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Badge Number <span className="text-rose-500">*</span>
+            </label>
+            <Input name="badge_number" placeholder="Badge Number" required value={newStaff.badge_number} onChange={handleAddChange} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Email Address <span className="text-rose-500">*</span>
+            </label>
+            <Input name="email" type="email" placeholder="Email" required value={newStaff.email} onChange={handleAddChange} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Initial Password <span className="text-rose-500">*</span>
+            </label>
+            <Input name="password" type="password" placeholder="Password" required value={newStaff.password} onChange={handleAddChange} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Assigned Role <span className="text-rose-500">*</span>
+            </label>
+            <select
+              name="role"
+              value={newStaff.role}
+              onChange={handleAddChange}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+            >
+              <option value="admin">System Administrator (Admin)</option>
+              <option value="supervisor">Enforcement Supervisor</option>
+              <option value="agent">Traffic Agent</option>
+              <option value="field_agent">Field Agent</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Phone Number (Optional)
+            </label>
+            <Input name="phone_number" placeholder="Phone" value={newStaff.phone_number} onChange={handleAddChange} />
+          </div>
+        </form>
+      </Modal>
 
       {/* Edit Staff Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-            <h3 className="text-lg font-bold mb-4">Edit Staff</h3>
-            <form onSubmit={submitEditStaff} className="space-y-3">
-              <Input name="full_name" placeholder="Full Name" required value={editStaff.full_name} onChange={handleEditChange} />
-              <Input name="phone_number" placeholder="Phone (optional)" value={editStaff.phone_number} onChange={handleEditChange} />
-              {isAdmin && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
-                    User Role
-                  </label>
-                  <select
-                    name="role"
-                    value={editStaff.role}
-                    onChange={handleEditChange}
-                    disabled={editStaff.id === user?.id}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600"
-                  >
-                    <option value="admin">System Administrator (Admin)</option>
-                    <option value="supervisor">Enforcement Supervisor</option>
-                    <option value="agent">Traffic Agent</option>
-                    <option value="field_agent">Field Agent</option>
-                  </select>
-                  {editStaff.id === user?.id && (
-                    <p className="text-[11px] text-amber-600 mt-1 font-medium">You cannot change your own Administrator role.</p>
-                  )}
-                </div>
-              )}
-              <div className="flex justify-end space-x-2 mt-4">
-                <Button type="button" variant="secondary" onClick={closeEditModal}>Cancel</Button>
-                <Button type="submit" variant="primary" loading={userActionLoading === `edit-${editStaff.id}`} >Save</Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showEditModal}
+        onClose={closeEditModal}
+        title="Edit Staff Member"
+        subtitle={`Editing Profile: ${editStaff.full_name}`}
+        size="md"
+        footer={
+          <div className="flex justify-end gap-2.5 w-full">
+            <Button type="button" variant="secondary" onClick={closeEditModal}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              loading={userActionLoading === `edit-${editStaff.id}`}
+              onClick={submitEditStaff}
+            >
+              Save Changes
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <form onSubmit={submitEditStaff} className="space-y-3.5 py-1">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Full Name <span className="text-rose-500">*</span>
+            </label>
+            <Input name="full_name" placeholder="Full Name" required value={editStaff.full_name} onChange={handleEditChange} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Phone Number (Optional)
+            </label>
+            <Input name="phone_number" placeholder="Phone (optional)" value={editStaff.phone_number} onChange={handleEditChange} />
+          </div>
+          {isAdmin && (
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+                User Role
+              </label>
+              <select
+                name="role"
+                value={editStaff.role}
+                onChange={handleEditChange}
+                disabled={editStaff.id === user?.id}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
+              >
+                <option value="admin">System Administrator (Admin)</option>
+                <option value="supervisor">Enforcement Supervisor</option>
+                <option value="agent">Traffic Agent</option>
+                <option value="field_agent">Field Agent</option>
+              </select>
+              {editStaff.id === user?.id && (
+                <p className="text-[11px] text-amber-600 mt-1 font-medium">You cannot change your own Administrator role.</p>
+              )}
+            </div>
+          )}
+        </form>
+      </Modal>
     </div>
   );
 }

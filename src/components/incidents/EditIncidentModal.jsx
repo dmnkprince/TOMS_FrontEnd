@@ -108,6 +108,7 @@ export default function EditIncidentModal({ isOpen, onClose, incident, onSave })
     stateRegistered: '',
     date: '',
     time: '',
+    videoFileName: '',
     description: '',
   });
 
@@ -128,6 +129,7 @@ export default function EditIncidentModal({ isOpen, onClose, incident, onSave })
         stateRegistered: incident.stateRegistered && incident.stateRegistered !== '—' ? incident.stateRegistered : '',
         date: incident.date || '',
         time: incident.time || '',
+        videoFileName: incident.videoFileName && incident.videoFileName !== '—' ? incident.videoFileName : (incident.video_file_name || ''),
         description: incident.description && incident.description !== '—' ? incident.description : (incident.remarks || ''),
       });
       setError(null);
@@ -361,6 +363,18 @@ export default function EditIncidentModal({ isOpen, onClose, incident, onSave })
                   className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <FileText size={13} className="text-emerald-700" />
+                Video File Name
+              </label>
+              <Input
+                placeholder="e.g. incident123.mp4"
+                value={formData.videoFileName}
+                onChange={(e) => handleChange('videoFileName', e.target.value)}
+              />
             </div>
           </div>
         </div>

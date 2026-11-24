@@ -18,6 +18,7 @@ const initialSampleIncidents = [
     offenceType: 'Speeding',
     location: 'Lekki-Epe Expressway Km 14',
     date: '2026-11-12',
+    videoFileName: 'dashcam_speeding_km14.mp4',
     description: 'Vehicle clocked exceeding 60km/h zone at 94km/h.',
     agent_id: 'c0000000-0000-0000-0000-000000000003',
     registered_by: 'officer.david@toms.gov',
@@ -35,6 +36,7 @@ const initialSampleIncidents = [
     offenceType: 'Running Red Light',
     location: 'Herbert Macaulay Junction, CBD',
     date: '2026-11-11',
+    videoFileName: 'traffic_cam_cbd_redlight.mp4',
     description: 'Vehicle failed to yield and crossed red traffic signal during high traffic.',
     agent_id: 'c0000000-0000-0000-0000-000000000004',
     registered_by: 'officer.aisha@toms.gov',
@@ -52,6 +54,7 @@ const initialSampleIncidents = [
     offenceType: 'Using Phone While Driving',
     location: 'Kano Ring Road Interchange',
     date: '2026-11-10',
+    videoFileName: 'bodycam_ringroad_mobile.mp4',
     description: 'Driver observed actively operating handheld cellular device while in motion.',
     agent_id: 'c0000000-0000-0000-0000-000000000003',
     registered_by: 'officer.david@toms.gov',
@@ -68,9 +71,9 @@ function getStoredIncidents() {
     }
     const parsed = JSON.parse(raw);
     const seedMap = {
-      'inc-seed-001': { vehicleMake: 'Toyota', vehicleModel: 'Camry', vehicleColor: 'Silver', bodyNumber: 'BD-101' },
-      'inc-seed-002': { vehicleMake: 'Mercedes', vehicleModel: 'Actros', vehicleColor: 'White', bodyNumber: 'TR-408' },
-      'inc-seed-003': { vehicleMake: 'Toyota', vehicleModel: 'HiAce', vehicleColor: 'Blue', bodyNumber: 'BS-022' },
+      'inc-seed-001': { vehicleMake: 'Toyota', vehicleModel: 'Camry', vehicleColor: 'Silver', bodyNumber: 'BD-101', videoFileName: 'dashcam_speeding_km14.mp4' },
+      'inc-seed-002': { vehicleMake: 'Mercedes', vehicleModel: 'Actros', vehicleColor: 'White', bodyNumber: 'TR-408', videoFileName: 'traffic_cam_cbd_redlight.mp4' },
+      'inc-seed-003': { vehicleMake: 'Toyota', vehicleModel: 'HiAce', vehicleColor: 'Blue', bodyNumber: 'BS-022', videoFileName: 'bodycam_ringroad_mobile.mp4' },
     };
 
     return parsed.map((item) => {
@@ -81,6 +84,7 @@ function getStoredIncidents() {
         vehicleMake: item.vehicleMake || item.vehicle_make || seedDefaults.vehicleMake || '—',
         vehicleModel: item.vehicleModel || item.vehicle_model || seedDefaults.vehicleModel || '—',
         vehicleColor: item.vehicleColor || item.vehicle_color || seedDefaults.vehicleColor || '—',
+        videoFileName: item.videoFileName || item.video_file_name || seedDefaults.videoFileName || '—',
         time: item.time || (item.created_at ? new Date(item.created_at).toLocaleTimeString('en-GB') : '11:00:00'),
       };
     });
@@ -124,6 +128,7 @@ export const getIncidents = async (currentUser = null, params = {}) => {
 
       return {
         id: s.id || s.reference_number,
+        reference_number: s.reference_number || s.id,
         vehiclePlate: s.plate_number || s.vehiclePlate || '—',
         bodyNumber: s.body_number || s.bodyNumber || '—',
         vehicleType: s.vehicle_type || s.vehicleType || 'Car',
@@ -136,8 +141,9 @@ export const getIncidents = async (currentUser = null, params = {}) => {
           s.offences?.[0]?.category ||
           s.offenceType ||
           'Traffic Violation',
-        location: s.manual_location || s.location || '—',
-        stateRegistered: s.state_registered || s.location_description || s.stateRegistered || '—',
+        fine_amount: s.total_fine_amount || s.fine_amount || s.fine || 15000,
+        location: s.manual_location || s.location || s.location_description || s.predefined_location_name || '—',
+        stateRegistered: s.state_registered || s.stateRegistered || s.state || '—',
         videoFileName: s.video_file_name || s.videoFileName || '—',
         date: formattedDate,
         description: s.remarks || s.description || '—',
@@ -335,6 +341,7 @@ export const updateIncident = async (id, data) => {
     date: updatedData.date,
     remarks: updatedData.description,
     offenceType: updatedData.offenceType,
+    video_file_name: updatedData.videoFileName !== '—' ? updatedData.videoFileName : null,
   };
 
   try {

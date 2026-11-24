@@ -265,8 +265,21 @@ function IncidentRegister() {
           
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Vehicle Plate Number */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+   {/* State Registered (Searchable Dropdown) */}
+        <div>
+          <SearchableSelect
+            label="State Registered"
+            icon={MapPin}
+            options={NIGERIAN_STATES}
+            value={form.stateRegistered}
+            onChange={(val) => setForm((prev) => ({ ...prev, stateRegistered: val }))}
+            placeholder="Select registered state..."
+            searchPlaceholder="Type to search state (e.g. Lagos, Abuja, Rivers)..."
+          />
+        </div>
+		
+		 {/* Vehicle Plate Number */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center gap-1.5">
               <Car size={14} className="text-emerald-700" />
@@ -281,6 +294,7 @@ function IncidentRegister() {
               className="w-full border border-slate-300 rounded-lg px-3.5 py-2.5 text-sm uppercase font-mono bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600/40 focus:border-emerald-600 transition"
             />
           </div>
+		
 
           {/* Body Number */}
           <div>
@@ -469,18 +483,7 @@ function IncidentRegister() {
           />
         </div>
 
-        {/* State Registered (Searchable Dropdown) */}
-        <div>
-          <SearchableSelect
-            label="State Registered"
-            icon={MapPin}
-            options={NIGERIAN_STATES}
-            value={form.stateRegistered}
-            onChange={(val) => setForm((prev) => ({ ...prev, stateRegistered: val }))}
-            placeholder="Select registered state..."
-            searchPlaceholder="Type to search state (e.g. Lagos, Abuja, Rivers)..."
-          />
-        </div>
+       
 
         {/* Video File Name */}
         <div>

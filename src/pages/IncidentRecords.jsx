@@ -906,6 +906,23 @@ function IncidentRecords() {
               </div>
             </div>
 
+            {/* Video File Name */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                Video File Name
+              </span>
+              <div className="flex items-center gap-2 text-xs font-mono font-semibold text-slate-800">
+                <FileText size={14} className="text-emerald-700 shrink-0" />
+                <span className="truncate">
+                  {activeRecord.videoFileName && activeRecord.videoFileName !== '—'
+                    ? activeRecord.videoFileName
+                    : activeRecord.video_file_name && activeRecord.video_file_name !== '—'
+                      ? activeRecord.video_file_name
+                      : '—'}
+                </span>
+              </div>
+            </div>
+
             {/* Description / Circumstances */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3.5">
               <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">

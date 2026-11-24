@@ -9,3 +9,6 @@ export { default as Badge } from './Badge';
 export { default as Spinner } from './Spinner';
 export { default as SearchableSelect } from './SearchableSelect';
 export { default as ToastProvider, useToast } from './Toast';
+export { default as ConfirmModal } from './ConfirmModal';
+export { default as PromptModal } from './PromptModal';
+export { DialogProvider, useDialog } from './DialogContext';
